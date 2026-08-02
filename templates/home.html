@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>भारत सरकार वॉइस सहायक | Government Voice Assistant</title>
+  <title>YOJANA MITHRA - Your Government Scheme Assistant | AI-Powered Chatbot</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="AI-powered voice assistant for Indian government schemes and services">
+  <meta name="description" content="YOJANA MITHRA - Your smart AI assistant for all Indian Government Schemes. Get instant information on agriculture, education, health, and welfare schemes in English, Kannada, and Hindi.">
   
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -90,6 +90,337 @@
       max-width: 1200px;
       margin: 0 auto;
       padding: 0 2rem;
+    }
+
+    /* Authentication Styles */
+    .auth-container {
+      position: absolute;
+      top: 1rem;
+      right: 2rem;
+      z-index: 10;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .auth-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .auth-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .auth-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .user-menu {
+      position: relative;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-orange), var(--primary-green));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .user-avatar:hover {
+      transform: scale(1.05);
+    }
+
+    .user-dropdown {
+      position: absolute;
+      top: 50px;
+      right: 0;
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+      min-width: 200px;
+      display: none;
+      z-index: 1000;
+    }
+
+    .user-dropdown.active {
+      display: block;
+    }
+
+    .dropdown-item {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-light);
+      cursor: pointer;
+      transition: background 0.2s ease;
+      color: var(--text-primary);
+      text-decoration: none;
+      display: block;
+    }
+
+    .dropdown-item:hover {
+      background: var(--bg-accent);
+    }
+
+    .dropdown-item:last-child {
+      border-bottom: none;
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: var(--error-red);
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+      max-width: 400px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: color 0.2s ease;
+    }
+
+    .close-modal:hover {
+      color: var(--text-primary);
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      font-size: 1rem;
+      transition: border-color 0.2s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary-orange);
+      box-shadow: 0 0 0 3px rgba(255, 153, 51, 0.1);
+    }
+
+    .form-select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      font-size: 1rem;
+      background: white;
+      cursor: pointer;
+    }
+
+    .form-checkbox {
+      margin-right: 0.5rem;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary-orange), var(--primary-green));
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius-md);
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      width: 100%;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--bg-accent);
+      color: var(--text-primary);
+      border: 1px solid var(--border-light);
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius-md);
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+
+    .btn-secondary:hover {
+      background: var(--border-light);
+    }
+
+    .auth-error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: var(--error-red);
+      padding: 0.75rem;
+      border-radius: var(--radius-md);
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .auth-success {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: var(--success-green);
+      padding: 0.75rem;
+      border-radius: var(--radius-md);
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .profile-section {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin: 1rem 0;
+      box-shadow: var(--shadow-md);
+    }
+
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .profile-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-orange), var(--primary-green));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .profile-info h3 {
+      margin-bottom: 0.25rem;
+      color: var(--text-primary);
+    }
+
+    .profile-info p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .profile-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .stat-card {
+      background: var(--bg-accent);
+      padding: 1rem;
+      border-radius: var(--radius-md);
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--primary-orange);
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
     }
 
     .header h1 {
@@ -318,6 +649,252 @@
       transform: translateX(2px);
     }
 
+    /* Apply Button Styles */
+    .scheme-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .apply-btn {
+      background: linear-gradient(135deg, var(--primary-orange) 0%, var(--warning-orange) 100%);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .apply-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      background: linear-gradient(135deg, var(--warning-orange) 0%, var(--primary-orange) 100%);
+    }
+
+    .apply-btn:active {
+      transform: translateY(0);
+    }
+
+    .info-btn {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 2px solid var(--border-medium);
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius-md);
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .info-btn:hover {
+      background: var(--bg-accent);
+      border-color: var(--light-blue);
+      color: var(--light-blue);
+      transform: translateY(-1px);
+    }
+
+    /* Application Info Styles */
+    .application-info, .scheme-details {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin: 1rem 0;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .application-info h4, .scheme-details h4 {
+      color: var(--primary-orange);
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+
+    .application-info h5 {
+      color: var(--text-primary);
+      margin: 1rem 0 0.5rem 0;
+      font-size: 1rem;
+    }
+
+    .application-steps ol {
+      margin: 0.5rem 0 1rem 1.5rem;
+      padding: 0;
+    }
+
+    .application-steps li {
+      margin-bottom: 0.5rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .helpline-info, .contact-info {
+      background: var(--bg-accent);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+
+    /* Enhanced Application Guidance Styles */
+    .application-guidance {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin: 1rem 0;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .application-guidance h4 {
+      color: var(--primary-orange);
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+
+    .application-guidance h5 {
+      color: var(--text-primary);
+      margin: 1rem 0 0.5rem 0;
+      font-size: 1rem;
+    }
+
+    .document-checklist {
+      background: var(--bg-accent);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+
+    .document-checklist ul {
+      margin: 0.5rem 0;
+      padding-left: 1.5rem;
+    }
+
+    .document-checklist li {
+      margin-bottom: 0.5rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    .important-notes {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+
+    .important-notes h5 {
+      color: #856404;
+      margin-bottom: 0.5rem;
+    }
+
+    .important-notes ul {
+      margin: 0.5rem 0;
+      padding-left: 1.5rem;
+    }
+
+    .important-notes li {
+      margin-bottom: 0.5rem;
+      color: #856404;
+      line-height: 1.4;
+    }
+
+    .offline-options {
+      background: #e3f2fd;
+      border: 1px solid #bbdefb;
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+
+    .offline-options h5 {
+      color: #1565c0;
+      margin-bottom: 0.5rem;
+    }
+
+    .offline-options ul {
+      margin: 0.5rem 0;
+      padding-left: 1.5rem;
+    }
+
+    .offline-options li {
+      margin-bottom: 0.5rem;
+      color: #1565c0;
+      line-height: 1.4;
+    }
+
+    .helpline-info p, .contact-info p {
+      margin: 0.25rem 0;
+      color: var(--text-secondary);
+    }
+
+    .helpline-info strong, .contact-info strong {
+      color: var(--text-primary);
+    }
+
+    /* Portal Links Styles */
+    .online-portals {
+      margin: 1rem 0;
+    }
+
+    .online-portals h5 {
+      color: var(--text-primary);
+      margin: 1rem 0 0.5rem 0;
+      font-size: 1rem;
+    }
+
+    .portal-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 0.5rem 0;
+    }
+
+    .portal-btn {
+      background: linear-gradient(135deg, var(--light-blue) 0%, var(--dark-blue) 100%);
+      color: white;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-md);
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .portal-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      background: linear-gradient(135deg, var(--dark-blue) 0%, var(--light-blue) 100%);
+    }
+
+    @media (max-width: 768px) {
+      .portal-links {
+        flex-direction: column;
+      }
+      
+      .portal-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
     /* Input Controls */
     .input-container {
       background: var(--bg-secondary);
@@ -376,6 +953,75 @@
 
     .voice-btn i {
       font-size: 1.25rem;
+    }
+
+    /* Multilingual Voice Controls */
+    .multilingual-voice-controls {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+
+    .multilingual-voice-btn {
+      background: var(--bg-accent);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 0.75rem 1.5rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      width: 100%;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .multilingual-voice-btn:hover {
+      background: var(--primary-orange);
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    .multilingual-voice-btn.voice-active {
+      background: var(--success-green);
+      color: white;
+      border-color: var(--success-green);
+    }
+
+    .voice-language-selector, .voice-speed-selector {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0.5rem 0;
+    }
+
+    .voice-language-selector label, .voice-speed-selector label {
+      font-weight: 600;
+      color: var(--text-primary);
+      min-width: 120px;
+      font-size: 0.9rem;
+    }
+
+    .voice-language-selector select, .voice-speed-selector select {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .voice-language-selector select:focus, .voice-speed-selector select:focus {
+      outline: none;
+      border-color: var(--primary-orange);
+      box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.2);
     }
 
     /* Text Input Area */
@@ -832,16 +1478,20 @@
   </style>
 </head>
 <body>
-  <!-- Modern Header -->
+  <!-- Modern Header with YOJANA MITHRA Branding -->
   <header class="header">
     <div class="header-content">
-      <h1>भारत सरकार वॉइस सहायक</h1>
-      <h2>Government Voice Assistant</h2>
-      <p class="header-subtitle">
-        <i class="fas fa-robot"></i>
-        AI-powered assistant for Indian government schemes and services
-      </p>
+      <h1 id="main-title">🏛️ YOJANA MITHRA</h1>
+      <h2 id="main-subtitle">Your Government Scheme Assistant</h2>
+      <div style="margin-top:1rem;">
+        {% load static %}
+        <a id="view-schemes-btn" href="{% url 'chatbot:schemes_all' %}" class="btn-primary" style="display:inline-block;max-width:260px;text-align:center;">View Available Schemes</a>
+        <button onclick="document.getElementById('logoutForm').submit();" class="btn-secondary" style="display:inline-block;max-width:120px;text-align:center;margin-left:1rem;background:#dc2626;border:none;"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
     </div>
+    <form id="logoutForm" action="{% url 'chatbot:logout' %}" method="POST" style="display:none;">
+      {% csrf_token %}
+    </form>
   </header>
 
   <!-- Main Container -->
@@ -851,7 +1501,7 @@
       <div class="chat-header">
         <h3>
           <i class="fas fa-comments"></i>
-          Chat Assistant
+          YOJANA MITHRA Assistant
         </h3>
         <div class="status-indicator">
           <div class="status-dot"></div>
@@ -980,8 +1630,10 @@
       testMic: "Test Microphone",
       clearChat: "Clear Chat",
       help: "Help",
-      welcome: "Welcome to Government Voice Assistant!",
-      welcomeDesc: "Ask about government schemes, eligibility, benefits, and application processes",
+      welcome: "Namaskara! I am YOJANA MITHRA, your personal assistant for all Indian Government Schemes.",
+      welcomeDesc: "How can I help you today? Ask about schemes in Agriculture, Education, Health, Employment, Housing & more!",
+      viewSchemes: "View Available Schemes",
+      logout: "Logout",
       relatedSchemes: "Related Government Schemes",
       sector: "Sector",
       description: "Description",
@@ -1023,7 +1675,108 @@
       showResults: "Show Results",
       clearFilters: "Clear Filters",
       resultsFound: "results found",
-      noResults: "No schemes found matching your criteria"
+      noResults: "No schemes found matching your criteria",
+      // Apply button translations
+      applyNow: "Apply Now",
+      moreInfo: "More Info",
+      confirmApply: "Do you want to apply for",
+      redirectingToApply: "Redirecting to application portal for",
+      applicationInfo: "Application Information",
+      scheme: "Scheme",
+      applicationSteps: "How to Apply",
+      step1: "Visit the nearest government office or Common Service Center (CSC)",
+      step2: "Carry required documents (Aadhaar, income certificate, etc.)",
+      step3: "Fill the application form completely",
+      step4: "Submit the form with required documents",
+      step5: "Keep the receipt for future reference",
+      needHelp: "Need Help",
+      callHelpline: "Call Helpline",
+      visitWebsite: "Visit",
+      fetchingDetails: "Fetching detailed information for",
+      schemeDetails: "Scheme Details",
+      detailsNote: "For complete details, eligibility criteria, required documents, and application process, please contact the relevant government office or visit the official website.",
+      contactInfo: "Contact Information",
+      helpline: "Helpline",
+      email: "Email",
+      openedWebsite: "Opened official website in new tab",
+      onlinePortals: "Try These Government Portals"
+    },
+    hi: {
+      title: "भारत सरकार वॉइस सहायक",
+      subtitle: "सरकारी वॉइस सहायक",
+      description: "भारतीय सरकारी योजनाओं और सेवाओं के लिए AI-संचालित सहायक",
+      chatAssistant: "चैट सहायक",
+      online: "ऑनलाइन",
+      offline: "ऑफलाइन",
+      clickSpeak: "क्लिक करें और बोलें",
+      send: "भेजें",
+      language: "भाषा",
+      placeholder: "सरकारी योजनाओं के बारे में अपना सवाल लिखें...",
+      sampleQuestions: "ये नमूना प्रश्न आज़माएं:",
+      agriculture: "कृषि योजनाएं",
+      health: "स्वास्थ्य योजनाएं",
+      education: "शिक्षा योजनाएं",
+      employment: "रोजगार योजनाएं",
+      housing: "आवास योजनाएं",
+      testMic: "माइक्रोफोन परीक्षण",
+      clearChat: "चैट साफ करें",
+      help: "सहायता",
+      welcome: "नमस्ते! मैं YOJANA MITHRA हूं, आपका सभी भारतीय सरकारी योजनाओं के लिए व्यक्तिगत सहायक!",
+      welcomeDesc: "आज मैं आपकी कैसे मदद कर सकता हूं? कृषि, शिक्षा, स्वास्थ्य, रोजगार और अधिक योजनाओं के बारे में पूछें!",
+      viewSchemes: "उपलब्ध योजनाएं देखें",
+      logout: "लॉगआउट",
+      relatedSchemes: "संबंधित सरकारी योजनाएं",
+      sector: "क्षेत्र",
+      description: "विवरण",
+      ministry: "मंत्रालय",
+      eligibility: "पात्रता",
+      benefits: "लाभ",
+      applyOnline: "ऑनलाइन आवेदन करें",
+      processing: "संसाधित हो रहा है...",
+      chatCleared: "चैट साफ हो गया! नए सवालों के लिए तैयार।",
+      helpTitle: "इस सहायक का उपयोग कैसे करें:",
+      helpVoice: "वॉइस इनपुट: \"क्लिक करें और बोलें\" पर क्लिक करें और अपना सवाल पूछें",
+      helpText: "टेक्स्ट इनपुट: टेक्स्ट बॉक्स में अपना सवाल लिखें",
+      helpSample: "नमूना प्रश्न: किसी भी नमूना प्रश्न बटन पर क्लिक करें",
+      helpLanguages: "भाषाएं: 9 भारतीय भाषाओं के बीच स्विच करें",
+      helpTopics: "विषय: पात्रता, लाभ, आवेदन प्रक्रिया के बारे में पूछें",
+      advancedSearch: "उन्नत खोज",
+      filters: "फ़िल्टर",
+      sortBy: "इसके अनुसार क्रमबद्ध करें",
+      allSectors: "सभी क्षेत्र",
+      sortRelevance: "प्रासंगिकता",
+      sortAlphabetical: "वर्णानुक्रम",
+      sortNewest: "नवीनतम पहले",
+      sortOldest: "पुरातन पहले",
+      filterByMinistry: "मंत्रालय के अनुसार फ़िल्टर करें",
+      filterByEligibility: "पात्रता के अनुसार फ़िल्टर करें",
+      showResults: "परिणाम दिखाएं",
+      clearFilters: "फ़िल्टर साफ करें",
+      resultsFound: "परिणाम मिले",
+      noResults: "आपके मानदंडों से मेल खाने वाली कोई योजना नहीं मिली",
+      applyNow: "अभी आवेदन करें",
+      moreInfo: "और जानकारी",
+      confirmApply: "क्या आप आवेदन करना चाहते हैं",
+      redirectingToApply: "आवेदन पोर्टल पर पुनर्निर्देशित किया जा रहा है",
+      applicationInfo: "आवेदन जानकारी",
+      scheme: "योजना",
+      applicationSteps: "आवेदन कैसे करें",
+      step1: "निकटतम सरकारी कार्यालय या कॉमन सर्विस सेंटर (CSC) पर जाएँ",
+      step2: "आवश्यक दस्तावेज़ ले जाएं (आधार, आय प्रमाण पत्र, आदि)",
+      step3: "आवेदन फॉर्म पूरी तरह से भरें",
+      step4: "आवश्यक दस्तावेज़ों के साथ फॉर्म जमा करें",
+      step5: "भविष्य के संदर्भ के लिए रसीद रखें",
+      needHelp: "सहायता चाहिए",
+      callHelpline: "हेल्पलाइन पर कॉल करें",
+      visitWebsite: "देखें",
+      fetchingDetails: "विस्तृत जानकारी प्राप्त की जा रही है",
+      schemeDetails: "योजना विवरण",
+      detailsNote: "पूर्ण विवरण, पात्रता मानदंड, आवश्यक दस्तावेज़ और आवेदन प्रक्रिया के लिए, कृपया संबंधित सरकारी कार्यालय से संपर्क करें या आधिकारिक वेबसाइट पर जाएँ।",
+      contactInfo: "संपर्क जानकारी",
+      helpline: "हेल्पलाइन",
+      email: "ईमेल",
+      openedWebsite: "नए टैब में आधिकारिक वेबसाइट खोली गई",
+      onlinePortals: "इन सरकारी पोर्टलों को आज़माएं"
     },
     kn: {
       title: "ಭಾರತ ಸರ್ಕಾರದ ಧ್ವನಿ ಸಹಾಯಕ",
@@ -1045,8 +1798,10 @@
       testMic: "ಮೈಕ್ರೊಫೋನ್ ಪರೀಕ್ಷಿಸಿ",
       clearChat: "ಚಾಟ್ ತೆರವುಗೊಳಿಸಿ",
       help: "ಸಹಾಯ",
-      welcome: "ಸರ್ಕಾರಿ ಧ್ವನಿ ಸಹಾಯಕಕ್ಕೆ ಸ್ವಾಗತ!",
-      welcomeDesc: "ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು, ಅರ್ಹತೆ, ಪ್ರಯೋಜನಗಳು ಮತ್ತು ಅರ್ಜಿ ಪ್ರಕ್ರಿಯೆಗಳ ಬಗ್ಗೆ ಕೇಳಿ",
+      welcome: "ನಮಸ್ಕಾರ! ನಾನು YOJANA MITHRA, ಎಲ್ಲಾ ಭಾರತೀಯ ಸರ್ಕಾರಿ ಯೋಜನೆಗಳಿಗೆ ನಿಮ್ಮ ವ್ಯಕ್ತಿಗತ ಸಹಾಯಕ!",
+      welcomeDesc: "ಇಂದು ನಾನು ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಬಹುದು? ಕೃಷಿ, ಶಿಕ್ಷಣ, ಆರೋಗ್ಯ, ಉದ್ಯೋಗ ಮತ್ತು ಇನ್ನಷ್ಟು ಯೋಜನೆಗಳ ಬಗ್ಗೆ ಕೇಳಿ!",
+      viewSchemes: "ಉಪಲಬ್ಧ ಯೋಜನೆಗಳನ್ನು ವೀಕ್ಷಿಸಿ",
+      logout: "ಲಾಗ್‌ಆವುಟ್",
       relatedSchemes: "ಸಂಬಂಧಿತ ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು",
       sector: "ವಲಯ",
       description: "ವಿವರಣೆ",
@@ -1088,10 +1843,35 @@
       showResults: "ಫಲಿತಾಂಶಗಳನ್ನು ತೋರಿಸಿ",
       clearFilters: "ಫಿಲ್ಟರ್‌ಗಳನ್ನು ತೆರವುಗೊಳಿಸಿ",
       resultsFound: "ಫಲಿತಾಂಶಗಳು ಸಿಕ್ಕಿವೆ",
-      noResults: "ನಿಮ್ಮ ಮಾನದಂಡಗಳಿಗೆ ಹೊಂದಿಕೆಯಾಗುವ ಯೋಜನೆಗಳು ಸಿಗಲಿಲ್ಲ"
+      noResults: "ನಿಮ್ಮ ಮಾನದಂಡಗಳಿಗೆ ಹೊಂದಿಕೆಯಾಗುವ ಯೋಜನೆಗಳು ಸಿಗಲಿಲ್ಲ",
+      // Apply button translations in Kannada
+      applyNow: "ಈಗ ಅರ್ಜಿ ಸಲ್ಲಿಸಿ",
+      moreInfo: "ಹೆಚ್ಚಿನ ಮಾಹಿತಿ",
+      confirmApply: "ನೀವು ಅರ್ಜಿ ಸಲ್ಲಿಸಲು ಬಯಸುತ್ತೀರಾ",
+      redirectingToApply: "ಅರ್ಜಿ ಪೋರ್ಟಲ್‌ಗೆ ಮರುನಿರ್ದೇಶಿಸಲಾಗುತ್ತಿದೆ",
+      applicationInfo: "ಅರ್ಜಿ ಮಾಹಿತಿ",
+      scheme: "ಯೋಜನೆ",
+      applicationSteps: "ಹೇಗೆ ಅರ್ಜಿ ಸಲ್ಲಿಸುವುದು",
+      step1: "ಹತ್ತಿರದ ಸರ್ಕಾರಿ ಕಚೇರಿ ಅಥವಾ ಸಾಮಾನ್ಯ ಸೇವಾ ಕೇಂದ್ರ (CSC) ಗೆ ಭೇಟಿ ನೀಡಿ",
+      step2: "ಅಗತ್ಯ ದಾಖಲೆಗಳನ್ನು ತರಲಿ (ಆಧಾರ್, ಆದಾಯ ಪ್ರಮಾಣಪತ್ರ, ಇತ್ಯಾದಿ)",
+      step3: "ಅರ್ಜಿ ಫಾರಂ ಅನ್ನು ಸಂಪೂರ್ಣವಾಗಿ ಭರ್ತಿ ಮಾಡಿ",
+      step4: "ಅಗತ್ಯ ದಾಖಲೆಗಳೊಂದಿಗೆ ಫಾರಂ ಸಲ್ಲಿಸಿ",
+      step5: "ಭವಿಷ್ಯದ ಉಲ್ಲೇಖಕ್ಕಾಗಿ ರಶೀದಿಯನ್ನು ಇಟ್ಟುಕೊಳ್ಳಿ",
+      needHelp: "ಸಹಾಯ ಬೇಕೇ",
+      callHelpline: "ಸಹಾಯವಾಣಿಗೆ ಕರೆ ಮಾಡಿ",
+      visitWebsite: "ಭೇಟಿ ನೀಡಿ",
+      fetchingDetails: "ವಿವರವಾದ ಮಾಹಿತಿಯನ್ನು ಪಡೆಯಲಾಗುತ್ತಿದೆ",
+      schemeDetails: "ಯೋಜನೆಯ ವಿವರಗಳು",
+      detailsNote: "ಸಂಪೂರ್ಣ ವಿವರಗಳು, ಅರ್ಹತಾ ಮಾನದಂಡಗಳು, ಅಗತ್ಯ ದಾಖಲೆಗಳು ಮತ್ತು ಅರ್ಜಿ ಪ್ರಕ್ರಿಯೆಗಾಗಿ, ದಯವಿಟ್ಟು ಸಂಬಂಧಿತ ಸರ್ಕಾರಿ ಕಚೇರಿಯನ್ನು ಸಂಪರ್ಕಿಸಿ ಅಥವಾ ಅಧಿಕೃತ ವೆಬ್‌ಸೈಟ್‌ಗೆ ಭೇಟಿ ನೀಡಿ.",
+      contactInfo: "ಸಂಪರ್ಕ ಮಾಹಿತಿ",
+      helpline: "ಸಹಾಯವಾಣಿ",
+      email: "ಇಮೇಲ್",
+      openedWebsite: "ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ಅಧಿಕೃತ ವೆಬ್‌ಸೈಟ್ ತೆರೆಯಲಾಗಿದೆ",
+      onlinePortals: "ಈ ಸರ್ಕಾರಿ ಪೋರ್ಟಲ್‌ಗಳನ್ನು ಪ್ರಯತ್ನಿಸಿ"
     }
   };
 
+  // Simple log function - NO voice logic here
   function log(msg, cls = '') {
       const p = document.createElement('p');
       p.innerHTML = msg;
@@ -1127,12 +1907,17 @@
                       ${scheme.ministry ? `<p><strong><i class="fas fa-building"></i> ${t.ministry}:</strong> ${scheme.ministry}</p>` : ''}
                       ${scheme.eligibility_criteria ? `<p><strong><i class="fas fa-user-check"></i> ${t.eligibility}:</strong> ${scheme.eligibility_criteria.substring(0, 200)}...</p>` : ''}
                       ${scheme.benefits ? `<p><strong><i class="fas fa-gift"></i> ${t.benefits}:</strong> ${scheme.benefits.substring(0, 150)}...</p>` : ''}
-                      ${scheme.application_link ? `
-                          <a href="${scheme.application_link}" target="_blank">
-                              <i class="fas fa-external-link-alt"></i>
-                              ${t.applyOnline}
-                          </a>
-                      ` : ''}
+                      
+                      <div class="scheme-actions">
+                          <button class="apply-btn" onclick="applyForScheme('${scheme.title}', '${scheme.source_url || scheme.website || '#'}', '${scheme.sector || ''}')">
+                              <i class="fas fa-paper-plane"></i>
+                              ${t.applyNow || 'Apply Now'}
+                          </button>
+                          <button class="info-btn" onclick="showSchemeDetails('${scheme.title}')">
+                              <i class="fas fa-info-circle"></i>
+                              ${t.moreInfo || 'More Info'}
+                          </button>
+                      </div>
                   </div>
               `;
           });
@@ -1176,15 +1961,22 @@
               },
               body: JSON.stringify({
                   query: query,
-                  language: currentLanguage
+                  lang: document.getElementById('languageSelect').value
               })
           });
           
           const data = await response.json();
           
           if (data.success) {
-              log(`<span class="bot">Bot:</span> ${data.response}`, 'bot');
+              const botResponse = data.response;
+              log(`<span class="bot">Bot:</span> ${botResponse}`, 'bot');
               displaySchemes(data.schemes);
+              
+              // Play voice for bot response
+              const cleanText = botResponse.replace(/<[^>]*>/g, '').trim();
+              if (cleanText) {
+                  setTimeout(() => playBotVoice(cleanText, currentVoiceLanguage), 400);
+              }
               
               if (data.confidence < 0.5) {
                   log('<em>Note: I\'m not very confident about this answer. Please try rephrasing your question.</em>', 'bot');
@@ -1193,8 +1985,19 @@
               log(`<span class="bot">Error:</span> ${data.error || 'Failed to process your query'}`, 'bot');
           }
       } catch (error) {
-          log(`<span class="bot">Error:</span> Network error. Please try again.`, 'bot');
           console.error('Text query error:', error);
+          
+          if (error.name === 'TypeError' || error.message.includes('fetch')) {
+              log(`<span class="bot">🌐 Network Error:</span> Connection failed. Please check your internet connection.`, 'bot');
+              log('<span class="bot">💡 Troubleshooting:</span>', 'bot');
+              log('• Check if you\'re connected to the internet', 'bot');
+              log('• Try refreshing the page', 'bot');
+              log('• Check if the server is running (python manage.py runserver)', 'bot');
+          } else {
+              log(`<span class="bot">❌ Error:</span> ${error.message || 'Something went wrong. Please try again.'}`, 'bot');
+          }
+          
+          showRetryOptions();
       }
   }
 
@@ -1217,25 +2020,69 @@
       }
   }
 
+  // CLEAN VOICE SYSTEM - Single implementation
+  let currentVoiceLanguage = 'en';
+  let isPlayingVoice = false;
+
+  // Play voice for bot response - ONLY function that triggers voice
+  async function playBotVoice(text, language = 'en') {
+      // Prevent overlapping voices
+      if (isPlayingVoice || !text || !text.trim()) return;
+      
+      isPlayingVoice = true;
+      
+      try {
+          const response = await fetch('/multilingual-voice/', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': getCookie('csrftoken')
+              },
+              body: JSON.stringify({
+                  text: text.trim(),
+                  language: language
+              })
+          });
+          
+          const data = await response.json();
+          
+          if (data.success && data.audio_data) {
+              const audio = new Audio('data:audio/mp3;base64,' + data.audio_data);
+              
+              audio.onended = () => { isPlayingVoice = false; };
+              audio.onerror = () => { isPlayingVoice = false; };
+              
+              await audio.play();
+          } else {
+              isPlayingVoice = false;
+          }
+      } catch (error) {
+          console.error('Voice error:', error);
+          isPlayingVoice = false;
+      }
+  }
+
   function useWebSpeechAPI() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       const recognition = new SpeechRecognition();
       
-      // Improved settings for better recognition
+      // Optimized settings for faster recognition
       recognition.continuous = false;
       recognition.interimResults = true;  // Show interim results
       recognition.maxAlternatives = 1;
       recognition.lang = getLanguageCode(currentLanguage);
       
-      log('🎤 Listening... Speak now!', 'bot');
-      log('<em>💡 Tip: Speak clearly and ensure your microphone is working</em>', 'bot');
+      // Immediate feedback - don't wait for onstart
+      log('🎤 Initializing microphone... Speak after the beep!', 'bot');
       
       let finalTranscript = '';
       let interimTranscript = '';
+      let hasStarted = false;
       
       recognition.onstart = function() {
+          hasStarted = true;
           console.log('Speech recognition started');
-          log('🔴 Recording started - speak now!', 'bot');
+          log('🔴 Recording now - SPEAK!', 'bot');
       };
       
       recognition.onresult = function(event) {
@@ -1251,7 +2098,7 @@
               }
           }
           
-          // Show interim results to user
+          // Show interim results to user for immediate feedback
           if (interimTranscript) {
               log(`<span class="you">Hearing:</span> <em>${interimTranscript}</em>`, 'you');
           }
@@ -1260,10 +2107,16 @@
           if (finalTranscript) {
               const confidence = event.results[event.results.length - 1][0].confidence;
               log(`<span class="you">You said:</span> ${finalTranscript}`, 'you');
-              log(`<em>Confidence: ${Math.round(confidence * 100)}%</em>`, 'bot');
               
-              // Send the recognized text to chat API
+              // Send the recognized text to chat API immediately
               sendTextQuery(finalTranscript);
+              
+              // 🔧 FIX: Auto-reinitialize voice recorder for continuous conversation
+              // User doesn't need to click again for next voice input
+              setTimeout(() => {
+                  log('🎤 Ready for next voice input... Click "CLICK & SPEAK" or just start speaking!', 'bot');
+                  // Recognition object is ready to be reused when user clicks voice button again
+              }, 1000);
           }
       };
       
@@ -1273,25 +2126,43 @@
           if (event.error === 'no-speech') {
               log('<span class="bot">❌ No speech detected.</span>', 'bot');
               log('<span class="bot">🔧 Troubleshooting:</span>', 'bot');
-              log('• Check if your microphone is connected and working', 'bot');
-              log('• Try speaking louder and clearer', 'bot');
-              log('• Make sure you allowed microphone permissions', 'bot');
-              log('• Try refreshing the page and allowing microphone access again', 'bot');
+              log('• <strong>Check microphone:</strong> Ensure it\'s connected and working', 'bot');
+              log('• <strong>Speak clearly:</strong> Try speaking louder and closer to the microphone', 'bot');
+              log('• <strong>Permissions:</strong> Make sure you allowed microphone access', 'bot');
+              log('• <strong>Browser:</strong> Try refreshing the page and allow microphone again', 'bot');
+              showRetryOptions();
           } else if (event.error === 'not-allowed') {
               log('<span class="bot">❌ Microphone access denied.</span>', 'bot');
-              log('<span class="bot">🔧 To fix this:</span>', 'bot');
-              log('• Click the microphone icon in your browser address bar', 'bot');
-              log('• Select "Always allow" for microphone access', 'bot');
-              log('• Refresh the page and try again', 'bot');
+              log('<span class="bot">🔧 To fix microphone permissions:</span>', 'bot');
+              log('• <strong>Step 1:</strong> Click the 🔒 or 🎤 icon in your browser address bar', 'bot');
+              log('• <strong>Step 2:</strong> Select "Always allow" for microphone access', 'bot');
+              log('• <strong>Step 3:</strong> Refresh the page and try again', 'bot');
+              log('• <strong>Alternative:</strong> Use Chrome or Edge for better compatibility', 'bot');
+              showRetryOptions();
           } else if (event.error === 'network') {
-              log('<span class="bot">❌ Network error.</span> Please check your internet connection.', 'bot');
+              log('<span class="bot">❌ Network error detected.</span>', 'bot');
+              log('<span class="bot">🌐 Switching to offline mode...</span>', 'bot');
+              setTimeout(() => {
+                  useOfflineVoiceRecording();
+              }, 1000);
           } else if (event.error === 'audio-capture') {
               log('<span class="bot">❌ Audio capture error.</span>', 'bot');
-              log('• Check if another application is using your microphone', 'bot');
-              log('• Try closing other applications and refresh the page', 'bot');
+              log('• <strong>Close other apps:</strong> Check if another application is using your microphone', 'bot');
+              log('• <strong>Restart browser:</strong> Close and reopen your browser', 'bot');
+              log('• <strong>Check settings:</strong> Ensure microphone is not muted in system settings', 'bot');
+              showRetryOptions();
+          } else if (event.error === 'service-not-allowed') {
+              log('<span class="bot">❌ Speech service not allowed.</span>', 'bot');
+              log('<span class="bot">🔄 Switching to offline voice processing...</span>', 'bot');
+              setTimeout(() => {
+                  useOfflineVoiceRecording();
+              }, 1000);
           } else {
               log(`<span class="bot">❌ Speech Recognition Error:</span> ${event.error}`, 'bot');
-              log('<span class="bot">💡 Alternative:</span> Use the text input below instead.', 'bot');
+              log('<span class="bot">🔄 Trying offline voice processing...</span>', 'bot');
+              setTimeout(() => {
+                  useOfflineVoiceRecording();
+              }, 1000);
           }
       };
       
@@ -1350,7 +2221,18 @@
           
       } catch (error) {
           log(`<span class="bot">❌ Could not access microphone:</span> ${error.message}`, 'bot');
-          log('<span class="bot">Please use text input instead.</span>', 'bot');
+          
+          if (error.name === 'NotAllowedError') {
+              log('<span class="bot">🔧 Microphone access denied. Please:</span>', 'bot');
+              log('• Allow microphone access in your browser', 'bot');
+              log('• Refresh the page and try again', 'bot');
+          } else if (error.name === 'NotFoundError') {
+              log('<span class="bot">🔧 No microphone found. Please:</span>', 'bot');
+              log('• Connect a microphone to your device', 'bot');
+              log('• Check if your microphone is working', 'bot');
+          }
+          
+          showRetryOptions();
       }
   }
 
@@ -1358,7 +2240,7 @@
       try {
           const formData = new FormData();
           formData.append('audio', audioBlob, 'voice.wav');
-          formData.append('language', currentLanguage);
+          formData.append('lang', document.getElementById('languageSelect').value);
           
           const response = await fetch('/voice/', {
               method: 'POST',
@@ -1371,19 +2253,37 @@
               if (data.user_text) {
                   log(`<span class="you">You said:</span> ${data.user_text}`, 'you');
               }
-              log(`<span class="bot">Bot:</span> ${data.text_response}`, 'bot');
+              const botResponse = data.text_response;
+              log(`<span class="bot">Bot:</span> ${botResponse}`, 'bot');
               displaySchemes(data.schemes);
+              
+              // Play voice for bot response
+              const cleanText = botResponse.replace(/<[^>]*>/g, '').trim();
+              if (cleanText) {
+                  setTimeout(() => playBotVoice(cleanText, currentVoiceLanguage), 400);
+              }
               
               if (data.confidence < 0.5) {
                   log('<em>Note: Low confidence response. Please try rephrasing.</em>', 'bot');
               }
           } else {
               log(`<span class="bot">❌ Offline voice processing failed:</span> ${data.error}`, 'bot');
-              log('<span class="bot">💡 Please try text input instead.</span>', 'bot');
+              log('<span class="bot">🔧 This might be because:</span>', 'bot');
+              log('• The audio was too quiet or unclear', 'bot');
+              log('• The server-side voice processing is not available', 'bot');
+              showRetryOptions();
           }
       } catch (error) {
           log(`<span class="bot">❌ Error processing offline voice:</span> ${error.message}`, 'bot');
-          log('<span class="bot">💡 Please use text input instead.</span>', 'bot');
+          
+          if (error.message.includes('fetch') || error.name === 'TypeError') {
+              log('<span class="bot">🌐 Server connection failed. Please:</span>', 'bot');
+              log('• Check if the server is running', 'bot');
+              log('• Verify your internet connection', 'bot');
+              log('• Try refreshing the page', 'bot');
+          }
+          
+          showRetryOptions();
       }
   }
 
@@ -1449,7 +2349,30 @@
       
       // Add UI language switcher
       addUILanguageSwitcher();
+      
+      // Pre-initialize microphone for faster voice recognition
+      initializeMicrophone();
   });
+  
+  // Pre-initialize microphone access for faster response
+  let microphoneInitialized = false;
+  async function initializeMicrophone() {
+      if (microphoneInitialized) return;
+      
+      try {
+          // Request microphone permission early (silent - won't show to user)
+          if (navigator.permissions) {
+              const permissionStatus = await navigator.permissions.query({ name: 'microphone' });
+              if (permissionStatus.state === 'granted') {
+                  microphoneInitialized = true;
+                  console.log('✅ Microphone pre-initialized');
+              }
+          }
+      } catch (error) {
+          // Silent fail - will request permission when user clicks voice button
+          console.log('Microphone pre-initialization skipped');
+      }
+  }
 
   function showWelcomeMessage() {
       const t = uiTranslations[currentUILanguage];
@@ -1459,22 +2382,65 @@
 
   function switchUILanguage(lang) {
       currentUILanguage = lang;
+      
+      // Show loading indicator
+      showLoadingOverlay('Translating page...');
+      
+      // Update UI elements first (fast)
       updateUILanguage();
+      
+      // Then translate dynamic content (may be slow due to API calls)
+      setTimeout(() => {
+          translatePageContent(lang).then(() => {
+              hideLoadingOverlay();
+          }).catch((error) => {
+              console.error('Translation error:', error);
+              hideLoadingOverlay();
+          });
+      }, 100);
   }
 
   function updateUILanguage() {
       const t = uiTranslations[currentUILanguage];
       
-      // Update header
-      document.querySelector('.header h1').textContent = t.title;
-      document.querySelector('.header h2').textContent = t.subtitle;
-      document.querySelector('.header-subtitle').innerHTML = `<i class="fas fa-robot"></i> ${t.description}`;
+      // Update page title
+      document.title = t.title;
+      
+      // Update main header title and subtitle based on language
+      const mainTitle = document.getElementById('main-title');
+      const mainSubtitle = document.getElementById('main-subtitle');
+      const viewSchemesBtn = document.getElementById('view-schemes-btn');
+      const logoutBtn = document.querySelector('.btn-secondary');
+      
+      if (currentUILanguage === 'kn') {
+          if (mainTitle) mainTitle.textContent = '🏛️ ಯೋಜನಾ ಮಿತ್ರ';
+          if (mainSubtitle) mainSubtitle.textContent = 'ನಿಮ್ಮ ಸರ್ಕಾರಿ ಯೋಜನಾ ಸಹಾಯಕ';
+      } else if (currentUILanguage === 'hi') {
+          if (mainTitle) mainTitle.textContent = '🏛️ योजना मित्र';
+          if (mainSubtitle) mainSubtitle.textContent = 'आपका सरकारी योजना सहायक';
+      } else {
+          if (mainTitle) mainTitle.textContent = '🏛️ YOJANA MITHRA';
+          if (mainSubtitle) mainSubtitle.textContent = 'Your Government Scheme Assistant';
+      }
+      
+      // Update buttons
+      if (viewSchemesBtn) {
+          viewSchemesBtn.textContent = t.viewSchemes;
+          // Update URL with current language
+          updateViewSchemesURL(currentUILanguage);
+      }
+      if (logoutBtn) logoutBtn.innerHTML = `<i class="fas fa-sign-out-alt"></i> ${t.logout}`;
       
       // Update chat header
-      document.querySelector('.chat-header h3').innerHTML = `<i class="fas fa-comments"></i> ${t.chatAssistant}`;
+      const chatHeader = document.querySelector('.chat-header h3');
+      if (chatHeader) chatHeader.innerHTML = `<i class="fas fa-comments"></i> ${t.chatAssistant}`;
       
       // Update voice button
-      document.querySelector('.voice-btn span').textContent = t.clickSpeak;
+      const voiceBtn = document.querySelector('.voice-btn span');
+      if (voiceBtn) voiceBtn.textContent = t.clickSpeak;
+      
+      // Update all buttons
+      translateButtons(t);
       
       // Update connection status
       updateConnectionStatus();
@@ -1484,9 +2450,197 @@
       createSampleQuestions();
       createUtilityButtons();
       
+      // Update language switcher to reflect current selection
+      updateLanguageSwitcherButtons();
+      
       // Clear and show new welcome message
       document.getElementById('log').innerHTML = '';
       showWelcomeMessage();
+  }
+  
+  function translateButtons(t) {
+      // Translate all data-translate-key buttons
+      document.querySelectorAll('[data-translate-key]').forEach(element => {
+          const key = element.getAttribute('data-translate-key');
+          if (t[key]) {
+              element.textContent = t[key];
+          }
+      });
+  }
+  
+  function updateLanguageSwitcherButtons() {
+      // Update the weight of language buttons to show selected
+      addUILanguageSwitcher();
+  }
+  
+  async function translatePageContent(targetLang) {
+      if (targetLang === 'en') {
+          return; // No translation needed for English
+      }
+      
+      try {
+          // Translate all translatable elements
+          const translatableElements = document.querySelectorAll('[data-translatable]');
+          
+          for (const element of translatableElements) {
+              const originalText = element.getAttribute('data-original-text') || element.textContent;
+              
+              // Store original if not already stored
+              if (!element.getAttribute('data-original-text')) {
+                  element.setAttribute('data-original-text', originalText);
+              }
+              
+              // Skip if already in target language
+              if (element.getAttribute('data-current-lang') === targetLang) {
+                  continue;
+              }
+              
+              // Translate via API
+              const translated = await translateText(originalText, targetLang, 'text');
+              if (translated) {
+                  element.textContent = translated;
+                  element.setAttribute('data-current-lang', targetLang);
+              }
+          }
+          
+          // Translate scheme cards if on schemes page
+          await translateSchemeCards(targetLang);
+          
+      } catch (error) {
+          console.error('Page translation error:', error);
+      }
+  }
+  
+  async function translateText(text, targetLang, type = 'text') {
+      try {
+          const response = await fetch('/api/translate/', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': getCookie('csrftoken')
+              },
+              body: JSON.stringify({
+                  content: text,
+                  language: targetLang,
+                  type: type
+              })
+          });
+          
+          const data = await response.json();
+          if (data.success) {
+              return data.translated;
+          }
+          return null;
+      } catch (error) {
+          console.error('Translation API error:', error);
+          return null;
+      }
+  }
+  
+  async function translateSchemeCards(targetLang) {
+      // Find all scheme cards on the page
+      const schemeCards = document.querySelectorAll('.scheme-card, .card[data-scheme-id]');
+      
+      if (schemeCards.length === 0) {
+          return;
+      }
+      
+      // Collect scheme IDs
+      const schemeIds = Array.from(schemeCards).map(card => {
+          return card.getAttribute('data-scheme-id');
+      }).filter(id => id);
+      
+      if (schemeIds.length === 0) {
+          return;
+      }
+      
+      try {
+          // Batch translate schemes
+          const response = await fetch('/api/translate/schemes/', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': getCookie('csrftoken')
+              },
+              body: JSON.stringify({
+                  scheme_ids: schemeIds,
+                  language: targetLang
+              })
+          });
+          
+          const data = await response.json();
+          if (data.success && data.translations) {
+              // Apply translations to cards
+              schemeCards.forEach(card => {
+                  const schemeId = card.getAttribute('data-scheme-id');
+                  const translation = data.translations[schemeId];
+                  
+                  if (translation) {
+                      // Update card content with translated data
+                      const titleElement = card.querySelector('.scheme-title, h3, h4');
+                      const descElement = card.querySelector('.scheme-description, .description, p');
+                      const sectorElement = card.querySelector('.scheme-sector, .sector');
+                      const ministryElement = card.querySelector('.scheme-ministry, .ministry');
+                      
+                      if (titleElement && translation.title) {
+                          titleElement.textContent = translation.title;
+                      }
+                      if (descElement && translation.short_description) {
+                          descElement.textContent = translation.short_description;
+                      }
+                      if (sectorElement && translation.sector) {
+                          sectorElement.textContent = translation.sector;
+                      }
+                      if (ministryElement && translation.ministry) {
+                          ministryElement.textContent = translation.ministry;
+                      }
+                  }
+              });
+          }
+      } catch (error) {
+          console.error('Scheme translation error:', error);
+      }
+  }
+  
+  function showLoadingOverlay(message = 'Loading...') {
+      let overlay = document.getElementById('translation-loading-overlay');
+      if (!overlay) {
+          overlay = document.createElement('div');
+          overlay.id = 'translation-loading-overlay';
+          overlay.style.cssText = `
+              position: fixed;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background: rgba(0, 0, 0, 0.7);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              z-index: 10000;
+              color: white;
+              font-size: 1.5rem;
+              flex-direction: column;
+          `;
+          overlay.innerHTML = `
+              <div class="spinner" style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 1rem;"></div>
+              <div>${message}</div>
+          `;
+          document.body.appendChild(overlay);
+          
+          // Add spinner animation
+          const style = document.createElement('style');
+          style.textContent = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
+          document.head.appendChild(style);
+      }
+      overlay.style.display = 'flex';
+  }
+  
+  function hideLoadingOverlay() {
+      const overlay = document.getElementById('translation-loading-overlay');
+      if (overlay) {
+          overlay.style.display = 'none';
+      }
   }
 
   function updateConnectionStatus() {
@@ -1521,17 +2675,11 @@
                       <i class="fas fa-language"></i>
                       ${t.language}:
                   </div>
-                  <select id="languageSelect" class="language-select" onchange="changeLanguage()">
+                    <select id="languageSelect" class="language-select" onchange="changeLanguage()">
                       <option value="en">🇺🇸 English</option>
                       <option value="hi">🇮🇳 हिंदी (Hindi)</option>
                       <option value="kn">🇮🇳 ಕನ್ನಡ (Kannada)</option>
-                      <option value="ta">🇮🇳 தமிழ் (Tamil)</option>
-                      <option value="te">🇮🇳 తెలుగు (Telugu)</option>
-                      <option value="bn">🇮🇳 বাংলা (Bengali)</option>
-                      <option value="gu">🇮🇳 ગુજરાતી (Gujarati)</option>
-                      <option value="mr">🇮🇳 मराठी (Marathi)</option>
-                      <option value="pa">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
-                  </select>
+                    </select>
               </div>
           </div>
       `;
@@ -1624,10 +2772,20 @@
 
   function addUILanguageSwitcher() {
       const header = document.querySelector('.header-content');
+      
+      // Remove existing language switcher if it exists
+      const existingSwitcher = header.querySelector('.ui-language-switcher');
+      if (existingSwitcher) {
+          existingSwitcher.remove();
+      }
+      
       const languageSwitcher = `
-          <div style="margin-top: 1rem;">
+          <div class="ui-language-switcher" style="margin-top: 1rem;">
               <button onclick="switchUILanguage('en')" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 0.5rem 1rem; margin: 0.25rem; border-radius: 0.5rem; cursor: pointer; font-weight: ${currentUILanguage === 'en' ? '600' : '400'};">
                   🇺🇸 English
+              </button>
+              <button onclick="switchUILanguage('hi')" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 0.5rem 1rem; margin: 0.25rem; border-radius: 0.5rem; cursor: pointer; font-weight: ${currentUILanguage === 'hi' ? '600' : '400'};">
+                  🇮🇳 हिन्दी
               </button>
               <button onclick="switchUILanguage('kn')" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 0.5rem 1rem; margin: 0.25rem; border-radius: 0.5rem; cursor: pointer; font-weight: ${currentUILanguage === 'kn' ? '600' : '400'};">
                   🇮🇳 ಕನ್ನಡ
@@ -1795,7 +2953,24 @@
                   // Display schemes
                   displaySchemes(sortedSchemes);
                   
-                  log(`<span class="bot">Bot:</span> ${data.response}`, 'bot');
+                    log(`<span class="bot">Bot:</span> ${data.response}`, 'bot');
+
+                    // Auto-play returned audio (base64) if provided by the server
+                    if (data.audio_response) {
+                      try {
+                        const audioFormat = data.audio_format || 'mp3';
+                        const audioSrc = `data:audio/${audioFormat};base64,${data.audio_response}`;
+                        const audio = new Audio(audioSrc);
+                        audio.play().catch(err => {
+                          console.warn('Audio autoplay blocked or failed:', err);
+                          // Provide a manual play button in the bot log so user can play audio
+                          const playBtnHtml = `<button class="audio-play-btn" onclick="(function(){let a=document.getElementById('search-result-audio'); if(!a){a=new Audio('${audioSrc}'); a.id='search-result-audio'; document.body.appendChild(a);} document.getElementById('search-result-audio').play();})()">▶ Play audio</button>`;
+                          log(playBtnHtml, 'bot');
+                        });
+                      } catch (e) {
+                        console.error('Error while attempting to play audio:', e);
+                      }
+                    }
               } else {
                   showNoResults();
               }
@@ -1880,7 +3055,324 @@
 
   function changeLanguage() {
       currentLanguage = document.getElementById('languageSelect').value;
+      currentVoiceLanguage = currentLanguage; // Update voice language too
+      currentUILanguage = currentLanguage; // Update UI language too
+      
+      // Get translations for current language
+      const t = uiTranslations[currentUILanguage];
+      
+      // Update header title based on language
+      const mainTitle = document.getElementById('main-title');
+      const mainSubtitle = document.getElementById('main-subtitle');
+      const viewSchemesBtn = document.getElementById('view-schemes-btn');
+      const logoutBtn = document.querySelector('.btn-secondary');
+      
+      if (currentLanguage === 'kn') {
+          mainTitle.textContent = '🏛️ ಯೋಜನಾ ಮಿತ್ರ';
+          mainSubtitle.textContent = 'ನಿಮ್ಮ ಸರ್ಕಾರಿ ಯೋಜನಾ ಸಹಾಯಕ';
+      } else if (currentLanguage === 'hi') {
+          mainTitle.textContent = '🏛️ योजना मित्र';
+          mainSubtitle.textContent = 'आपका सरकारी योजना सहायक';
+      } else {
+          mainTitle.textContent = '🏛️ YOJANA MITHRA';
+          mainSubtitle.textContent = 'Your Government Scheme Assistant';
+      }
+      
+      // Update buttons
+      if (viewSchemesBtn) {
+          viewSchemesBtn.textContent = t.viewSchemes;
+          // Update URL to include language parameter
+          updateViewSchemesURL(currentLanguage);
+      }
+      if (logoutBtn) logoutBtn.innerHTML = `<i class="fas fa-sign-out-alt"></i> ${t.logout}`;
+      
       log(`Language changed to: ${document.getElementById('languageSelect').selectedOptions[0].text}`, 'bot');
+      log(`Voice will now respond in ${currentLanguage.toUpperCase()}`, 'bot');
+  }
+  
+  // Update View Schemes button URL with current language
+  function updateViewSchemesURL(lang) {
+      const btn = document.getElementById('view-schemes-btn');
+      if (btn) {
+          const baseUrl = btn.href.split('?')[0]; // Get base URL without params
+          btn.href = `${baseUrl}?lang=${lang}`;
+      }
+  }
+
+  // Apply for scheme functionality - Enhanced with sector-specific guidance
+  function applyForScheme(schemeTitle, websiteUrl, schemeSector) {
+      const t = uiTranslations[currentUILanguage];
+      
+      // Log application attempt
+      log(`<span class="bot"><i class="fas fa-paper-plane"></i> ${t.redirectingToApply || 'Redirecting to application portal for'}: <strong>${schemeTitle}</strong></span>`, 'bot');
+      
+      // Direct redirect to application website
+      if (websiteUrl && websiteUrl !== '#' && websiteUrl !== '') {
+          // Open official website in new tab
+          window.open(websiteUrl, '_blank');
+          log(`<span class="bot"><i class="fas fa-external-link-alt"></i> ${t.openedWebsite || 'Opened official website in new tab'}</span>`, 'bot');
+          
+          // Show additional application guidance
+          setTimeout(() => {
+              showApplicationGuidance(schemeTitle, schemeSector);
+          }, 1000);
+      } else {
+          // If no website available, show comprehensive application info
+          showApplicationInfo(schemeTitle, schemeSector);
+      }
+  }
+
+  function showApplicationGuidance(schemeTitle, schemeSector) {
+      const t = uiTranslations[currentUILanguage];
+      
+      const guidanceInfo = `
+          <div class="application-guidance">
+              <h4><i class="fas fa-lightbulb"></i> ${t.applicationTips || 'Application Tips'}</h4>
+              <p><strong>${t.scheme || 'Scheme'}:</strong> ${schemeTitle}</p>
+              
+              <div class="document-checklist">
+                  <h5><i class="fas fa-list-check"></i> ${t.requiredDocuments || 'Required Documents'}:</h5>
+                  <ul>
+                      <li>✅ ${t.aadhaarCard || 'Aadhaar Card (Mandatory)'}</li>
+                      <li>✅ ${t.addressProof || 'Address Proof (Voter ID, Ration Card, etc.)'}</li>
+                      <li>✅ ${t.incomeCertificate || 'Income Certificate'}</li>
+                      <li>✅ ${t.passportPhoto || 'Passport Size Photographs'}</li>
+                      <li>✅ ${t.bankAccount || 'Bank Account Details & Passbook'}</li>
+                      ${schemeSector === 'education' ? '<li>✅ Educational Certificates</li>' : ''}
+                      ${schemeSector === 'agriculture' ? '<li>✅ Land Records / Kisan Credit Card</li>' : ''}
+                      ${schemeSector === 'health' ? '<li>✅ Medical Records / BPL Card</li>' : ''}
+                  </ul>
+              </div>
+              
+              <div class="application-steps">
+                  <h5><i class="fas fa-tasks"></i> ${t.applicationSteps || 'Application Steps'}:</h5>
+                  <ol>
+                      <li>${t.step1 || 'Visit the official website or nearest government office'}</li>
+                      <li>${t.step2 || 'Register/Login with your mobile number and Aadhaar'}</li>
+                      <li>${t.step3 || 'Fill the application form with accurate details'}</li>
+                      <li>${t.step4 || 'Upload required documents (clear scans/photos)'}</li>
+                      <li>${t.step5 || 'Submit application and note down reference number'}</li>
+                      <li>${t.step6 || 'Track application status online'}</li>
+                  </ol>
+              </div>
+              
+              <div class="important-notes">
+                  <h5><i class="fas fa-exclamation-triangle"></i> ${t.importantNotes || 'Important Notes'}:</h5>
+                  <ul>
+                      <li>📝 ${t.fillAccurately || 'Fill all details accurately to avoid rejection'}</li>
+                      <li>📱 ${t.mobileNumber || 'Keep your mobile number active for OTP verification'}</li>
+                      <li>📧 ${t.emailUpdates || 'Provide email for application updates'}</li>
+                      <li>🗂️ ${t.keepDocuments || 'Keep photocopies of all submitted documents'}</li>
+                  </ul>
+              </div>
+          </div>
+      `;
+      
+      log(guidanceInfo, 'application-guidance');
+  }
+
+  function showApplicationInfo(schemeTitle, schemeSector) {
+      const t = uiTranslations[currentUILanguage];
+      
+      const applicationInfo = `
+          <div class="application-info">
+              <h4><i class="fas fa-info-circle"></i> ${t.applicationInfo || 'Application Information'}</h4>
+              <p><strong>${t.scheme || 'Scheme'}:</strong> ${schemeTitle}</p>
+              
+              <div class="online-portals">
+                  <h5><i class="fas fa-laptop"></i> ${t.onlinePortals || 'Try These Government Portals'}:</h5>
+                  <div class="portal-links">
+                      <a href="https://www.india.gov.in/" target="_blank" class="portal-btn">
+                          <i class="fas fa-external-link-alt"></i> India.gov.in
+                      </a>
+                      <a href="https://services.india.gov.in/" target="_blank" class="portal-btn">
+                          <i class="fas fa-external-link-alt"></i> Services Portal
+                      </a>
+                      <a href="https://www.digitalindia.gov.in/" target="_blank" class="portal-btn">
+                          <i class="fas fa-external-link-alt"></i> Digital India
+                      </a>
+                      ${schemeSector === 'health' ? `
+                      <a href="https://pmjay.gov.in/" target="_blank" class="portal-btn">
+                          <i class="fas fa-external-link-alt"></i> PM-JAY Portal
+                      </a>` : ''}
+                      ${schemeSector === 'agriculture' ? `
+                      <a href="https://pmkisan.gov.in/" target="_blank" class="portal-btn">
+                          <i class="fas fa-external-link-alt"></i> PM-KISAN Portal
+                      </a>` : ''}
+                      ${schemeSector === 'education' ? `
+                      <a href="https://scholarships.gov.in/" target="_blank" class="portal-btn">
+                          <i class="fas fa-external-link-alt"></i> Scholarship Portal
+                      </a>` : ''}
+                      <a href="https://csc.gov.in/" target="_blank" class="portal-btn">
+                          <i class="fas fa-external-link-alt"></i> Common Service Center
+                      </a>
+                  </div>
+              </div>
+              
+              <div class="offline-options">
+                  <h5><i class="fas fa-building"></i> ${t.offlineOptions || 'Offline Application Options'}:</h5>
+                  <ul>
+                      <li>🏢 ${t.nearestGovOffice || 'Visit nearest government office'}</li>
+                      <li>🏪 ${t.commonServiceCenter || 'Go to Common Service Center (CSC)'}</li>
+                      <li>🏛️ ${t.municipalOffice || 'Contact municipal/block office'}</li>
+                      <li>📞 ${t.callHelpline || 'Call scheme helpline number'}</li>
+                  </ul>
+              </div>
+              
+              <div class="application-steps">
+                  <h5>${t.applicationSteps || 'How to Apply'}:</h5>
+                  <ol>
+                      <li>${t.step1 || 'Visit the nearest government office or Common Service Center (CSC)'}</li>
+                      <li>${t.step2 || 'Carry required documents (Aadhaar, income certificate, etc.)'}</li>
+                      <li>${t.step3 || 'Fill the application form completely'}</li>
+                      <li>${t.step4 || 'Submit the form with required documents'}</li>
+                      <li>${t.step5 || 'Keep the receipt for future reference'}</li>
+                  </ol>
+              </div>
+              <div class="helpline-info">
+                  <p><strong>${t.needHelp || 'Need Help'}?</strong></p>
+                  <p><i class="fas fa-phone"></i> ${t.callHelpline || 'Call Helpline'}: <strong>1800-11-1800</strong></p>
+                  <p><i class="fas fa-globe"></i> ${t.visitWebsite || 'Visit'}: <strong>www.india.gov.in</strong></p>
+                  <p><i class="fas fa-mobile-alt"></i> ${t.smsHelp || 'SMS HELP'} to: <strong>51969</strong></p>
+              </div>
+          </div>
+      `;
+      
+      log(applicationInfo, 'application-info');
+  }
+
+  function showSchemeDetails(schemeTitle) {
+      const t = uiTranslations[currentUILanguage];
+      
+      // Show detailed scheme information
+      log(`<span class="bot"><i class="fas fa-search"></i> ${t.fetchingDetails || 'Fetching detailed information for'}: <strong>${schemeTitle}</strong></span>`, 'bot');
+      
+      // You can expand this to fetch more detailed information from the backend
+      setTimeout(() => {
+          const detailsInfo = `
+              <div class="scheme-details">
+                  <h4><i class="fas fa-file-alt"></i> ${t.schemeDetails || 'Scheme Details'}</h4>
+                  <p><strong>${t.scheme || 'Scheme'}:</strong> ${schemeTitle}</p>
+                  <p>${t.detailsNote || 'For complete details, eligibility criteria, required documents, and application process, please contact the relevant government office or visit the official website.'}</p>
+                  <div class="contact-info">
+                      <p><strong>${t.contactInfo || 'Contact Information'}:</strong></p>
+                      <p><i class="fas fa-phone"></i> ${t.helpline || 'Helpline'}: 1800-XXX-XXXX</p>
+                      <p><i class="fas fa-envelope"></i> ${t.email || 'Email'}: info@scheme.gov.in</p>
+                  </div>
+              </div>
+          `;
+          log(detailsInfo, 'scheme-details');
+      }, 1000);
+  }
+
+  // Show retry options for voice recognition errors
+  function showRetryOptions() {
+      const retryHtml = `
+          <div class="retry-options" style="margin: 1rem 0; padding: 1rem; background: #f8fafc; border-radius: 0.5rem; border-left: 4px solid #f59e0b;">
+              <h4 style="margin: 0 0 0.5rem 0; color: #f59e0b;">🔄 Try These Options:</h4>
+              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                  <button onclick="talk()" style="background: #3b82f6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.25rem; cursor: pointer;">
+                      🎤 Try Voice Again
+                  </button>
+                  <button onclick="document.getElementById('textInput').focus()" style="background: #10b981; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.25rem; cursor: pointer;">
+                      ⌨️ Use Text Input
+                  </button>
+                  <button onclick="testMicrophone()" style="background: #8b5cf6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.25rem; cursor: pointer;">
+                      🔧 Test Microphone
+                  </button>
+                  <button onclick="testDatabase()" style="background: #f59e0b; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.25rem; cursor: pointer;">
+                      🗄️ Test Database
+                  </button>
+              </div>
+          </div>
+      `;
+      log(retryHtml, 'retry-options');
+  }
+
+  // Test microphone functionality
+  async function testMicrophone() {
+      log('<span class="bot">🔧 Testing microphone...</span>', 'bot');
+      
+      try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          log('<span class="bot">✅ Microphone access granted!</span>', 'bot');
+          log('<span class="bot">🎤 Microphone is working. You can now try voice input again.</span>', 'bot');
+          
+          // Stop the stream
+          stream.getTracks().forEach(track => track.stop());
+          
+          // Show available audio devices
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          const audioInputs = devices.filter(device => device.kind === 'audioinput');
+          
+          if (audioInputs.length > 0) {
+              log(`<span class="bot">🎧 Found ${audioInputs.length} audio input device(s):</span>`, 'bot');
+              audioInputs.forEach((device, index) => {
+                  const deviceName = device.label || `Microphone ${index + 1}`;
+                  log(`• ${deviceName}`, 'bot');
+              });
+          }
+          
+      } catch (error) {
+          log('<span class="bot">❌ Microphone test failed:</span>', 'bot');
+          
+          if (error.name === 'NotAllowedError') {
+              log('• Microphone access was denied', 'bot');
+              log('• Please allow microphone access and try again', 'bot');
+          } else if (error.name === 'NotFoundError') {
+              log('• No microphone found', 'bot');
+              log('• Please connect a microphone and try again', 'bot');
+          } else {
+              log(`• Error: ${error.message}`, 'bot');
+          }
+      }
+  }
+
+  // Test database connectivity and data availability
+  async function testDatabase() {
+      log('<span class="bot">🗄️ Testing database connection...</span>', 'bot');
+      
+      try {
+          const response = await fetch('/api/database/status/', {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/json',
+              }
+          });
+          
+          const data = await response.json();
+          
+          if (data.success && data.mongodb_connected) {
+              log('<span class="bot">✅ Database connection successful!</span>', 'bot');
+              log(`<span class="bot">📊 Found ${data.total_schemes} schemes in database</span>`, 'bot');
+              log(`<span class="bot">🗄️ Database: ${data.database_name}</span>`, 'bot');
+              log(`<span class="bot">📁 Collection: ${data.collection_name}</span>`, 'bot');
+              
+              if (data.total_schemes === 0) {
+                  log('<span class="bot">⚠️ No schemes found in database!</span>', 'bot');
+                  log('<span class="bot">💡 You need to add scheme data using MongoDB commands:</span>', 'bot');
+                  log('• Use the commands in mongodb_insert_commands.js', 'bot');
+                  log('• Copy and paste them in MongoDB Compass', 'bot');
+              } else {
+                  log('<span class="bot">🎉 Database is ready! You can now search for schemes.</span>', 'bot');
+              }
+          } else {
+              log('<span class="bot">❌ Database connection failed!</span>', 'bot');
+              log(`<span class="bot">Error: ${data.error}</span>`, 'bot');
+              log('<span class="bot">🔧 Troubleshooting:</span>', 'bot');
+              log('• Make sure MongoDB is running', 'bot');
+              log('• Check if mongodb_adapter.py exists', 'bot');
+              log('• Verify MongoDB connection settings', 'bot');
+          }
+          
+      } catch (error) {
+          log('<span class="bot">❌ Database test failed!</span>', 'bot');
+          log(`<span class="bot">Error: ${error.message}</span>`, 'bot');
+          log('<span class="bot">🔧 This might be because:</span>', 'bot');
+          log('• The server is not running', 'bot');
+          log('• MongoDB is not installed or running', 'bot');
+          log('• Network connection issues', 'bot');
+      }
   }
 
   // CSRF token helper

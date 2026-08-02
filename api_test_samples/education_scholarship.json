@@ -1,0 +1,21 @@
+{
+  "query": "Are there any scholarships for college students from poor families?"
+}
+
+// EXPECTED OUTPUT:
+// {
+//   "answer": "Yes, several government scholarship schemes are available for college students from economically weaker sections:\n\n1. Post Matric Scholarship for SC/ST: Covers tuition fees, maintenance allowance for students pursuing higher education. Apply through National Scholarship Portal.\n\n2. Central Sector Scheme of Scholarship: Merit-based scholarship for students from families with annual income below ₹4.5 lakhs.\n\n3. PM Scholarship for Wards of Ex-Servicemen: For children of armed forces personnel and ex-servicemen.\n\nEligibility: Income certificate, caste certificate (if applicable), admission proof, bank account details. Visit scholarships.gov.in to apply.",
+//   "ssml": "<speak>Yes, several government scholarship schemes are available...</speak>",
+//   "schemes_used": [
+//     "Post Matric Scholarship Scheme",
+//     "Central Sector Scholarship Scheme",
+//     "National Scholarship Portal"
+//   ]
+// }
+
+// WHAT TO CHECK:
+// 1. Education sector schemes retrieved
+// 2. Eligibility criteria mentioned
+// 3. Application portal specified
+// 4. Income-based schemes prioritized
+// 5. Clear action items for students

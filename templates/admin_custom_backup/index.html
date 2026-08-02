@@ -1,0 +1,92 @@
+{% extends "admin/index.html" %}
+{% load static %}
+
+{% block content %}
+  <div class="dashboard-container">
+    <div style="width:100%">
+      <div class="quick-actions">
+        <a class="quick-action-btn" href="/admin/chatbot/governmentscheme/">
+          <span class="k">S</span>
+          <span>Manage Schemes</span>
+        </a>
+        <a class="quick-action-btn" href="/admin/chatbot/webscrapinglog/">
+          <span class="k">L</span>
+          <span>Scraping Logs</span>
+        </a>
+        <a class="quick-action-btn" href="/admin/chatbot/chatmessage/">
+          <span class="k">C</span>
+          <span>Chat Messages</span>
+        </a>
+        <a class="quick-action-btn" href="/admin/chatbot/userprofile/">
+          <span class="k">U</span>
+          <span>Users</span>
+        </a>
+        <!-- Run scraper form (protected) -->
+        {% if request.user.is_authenticated %}
+        <button id="run-scraper-async" class="quick-action-btn" aria-label="run-scraper">
+          <span class="k">R</span>
+          <span>Run Scraper</span>
+        </button>
+        <a class="quick-action-btn" href="/admin-panel/scraping/dry-run/">
+          <span class="k">D</span>
+          <span>Dry Run Preview</span>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="dashboard-card">
+      <h3>Site Summary</h3>
+      <p class="muted">Quick overview of recent activity and system health.</p>
+      <p style="margin-top:10px">Total schemes: <strong id="total-schemes-count">—</strong></p>
+      <p>Active schemes: <strong id="active-schemes-count">—</strong></p>
+    </div>
+    <div class="dashboard-card">
+      <h3>Content</h3>
+      <p class="muted">Manage schemes, users, and notifications.</p>
+    </div>
+    <div class="dashboard-card">
+      <h3>Scrapers</h3>
+      <p class="muted">View scraping logs and run scrapers.</p>
+    </div>
+  </div>
+  {{ block.super }}
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script>
+    // Fetch admin-panel stats and populate counts
+    (function(){
+      fetch('/admin-panel/api/stats/', { credentials: 'same-origin' })
+        .then(r => r.json())
+        .then(d => {
+          if(d && d.success && d.stats){
+            document.getElementById('total-schemes-count').textContent = d.stats.total_schemes || 0;
+            document.getElementById('active-schemes-count').textContent = d.stats.active_schemes || 0;
+          }
+        })
+        .catch(()=>{});
+
+      // Wire async run scraper button
+      document.addEventListener('DOMContentLoaded', function(){
+        const btn = document.getElementById('run-scraper-async');
+        if(!btn) return;
+        btn.addEventListener('click', function(){
+          if(!confirm('Run scraper in background? This may take several minutes.')) return;
+          btn.disabled = true; btn.textContent = 'Queued...';
+          fetch('/admin-panel/scraping/run-async/', { method: 'POST', credentials: 'same-origin', headers: {'X-CSRFToken': document.cookie.split('csrftoken=')[1] || ''} })
+            .then(r => r.json())
+            .then(d => {
+              if(d && d.success){
+                alert('Scraper started. If Celery is configured, task id: ' + (d.task_id || 'n/a'))
+              } else {
+                alert('Failed to start scraper: ' + (d.message || d.error || 'unknown'))
+              }
+              btn.disabled = false; btn.textContent = 'Run Scraper';
+            }).catch(e=>{ alert('Error starting scraper: '+e); btn.disabled=false; btn.textContent='Run Scraper' });
+        });
+      });
+    })();
+  </script>
+{% endblock %}

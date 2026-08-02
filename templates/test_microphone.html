@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microphone Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button.recording {
+            background: #f44336;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .log {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .log div {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        .warning { color: #ff9800; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Microphone Test</h1>
+        <p>Click the buttons below to test your microphone:</p>
+        
+        <button id="checkPermission">1. Check Microphone Permission</button>
+        <button id="testRecording">2. Test Recording (10 sec)</button>
+        <button id="testSpeechRecognition">3. Test Speech Recognition</button>
+        
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        const logDiv = document.getElementById('log');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            logDiv.appendChild(div);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // Test 1: Check permission
+        document.getElementById('checkPermission').addEventListener('click', async () => {
+            log('Checking microphone permissions...', 'info');
+            
+            try {
+                // Check if navigator.mediaDevices exists
+                if (!navigator.mediaDevices) {
+                    log('❌ navigator.mediaDevices NOT available. This might be because:', 'error');
+                    log('• You are not using HTTPS (required for microphone access)', 'warning');
+                    log('• Your browser is outdated', 'warning');
+                    log('Current URL: ' + window.location.href, 'info');
+                    return;
+                }
+                
+                log('✅ navigator.mediaDevices is available', 'success');
+                
+                // Request permission
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                log('✅ Microphone permission GRANTED!', 'success');
+                log('Microphone label: ' + (stream.getAudioTracks()[0].label || 'Unknown'), 'info');
+                
+                // Stop the stream
+                stream.getTracks().forEach(track => track.stop());
+                log('Stream stopped', 'info');
+                
+            } catch (error) {
+                log('❌ Microphone access FAILED:', 'error');
+                log('Error name: ' + error.name, 'error');
+                log('Error message: ' + error.message, 'error');
+                
+                if (error.name === 'NotAllowedError') {
+                    log('🔧 Fix: You denied microphone permission. Please:', 'warning');
+                    log('1. Click the 🔒 (lock) icon in the address bar', 'warning');
+                    log('2. Change microphone permission to "Allow"', 'warning');
+                    log('3. Refresh the page and try again', 'warning');
+                } else if (error.name === 'NotFoundError') {
+                    log('🔧 Fix: No microphone detected. Please:', 'warning');
+                    log('1. Connect a microphone to your device', 'warning');
+                    log('2. Check if your microphone is working in other apps', 'warning');
+                    log('3. Try a different browser', 'warning');
+                } else if (error.name === 'NotReadableError') {
+                    log('🔧 Fix: Microphone is being used by another app. Please:', 'warning');
+                    log('1. Close other apps using the microphone', 'warning');
+                    log('2. Restart your browser', 'warning');
+                }
+            }
+        });
+
+        // Test 2: Test recording
+        let mediaRecorder = null;
+        let audioChunks = [];
+        
+        document.getElementById('testRecording').addEventListener('click', async () => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                log('⏹️ Stopping recording...', 'info');
+                mediaRecorder.stop();
+                document.getElementById('testRecording').classList.remove('recording');
+                document.getElementById('testRecording').textContent = '2. Test Recording (10 sec)';
+                return;
+            }
+            
+            try {
+                log('Starting recording test...', 'info');
+                
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                log('✅ Microphone stream obtained', 'success');
+                
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                    log('Received audio chunk: ' + event.data.size + ' bytes', 'info');
+                };
+                
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    log('✅ Recording complete! Size: ' + audioBlob.size + ' bytes', 'success');
+                    
+                    // Create audio player
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const audio = new Audio(audioUrl);
+                    const div = document.createElement('div');
+                    div.innerHTML = '<audio controls src="' + audioUrl + '"></audio><br><em>Play this to hear your recording</em>';
+                    logDiv.appendChild(div);
+                    
+                    stream.getTracks().forEach(track => track.stop());
+                    log('Stream stopped', 'info');
+                };
+                
+                mediaRecorder.start();
+                log('🔴 RECORDING! Speak now...', 'success');
+                document.getElementById('testRecording').classList.add('recording');
+                document.getElementById('testRecording').textContent = '⏹️ Stop Recording';
+                
+                setTimeout(() => {
+                    if (mediaRecorder && mediaRecorder.state === 'recording') {
+                        log('Auto-stopping after 10 seconds...', 'info');
+                        mediaRecorder.stop();
+                        document.getElementById('testRecording').classList.remove('recording');
+                        document.getElementById('testRecording').textContent = '2. Test Recording (10 sec)';
+                    }
+                }, 10000);
+                
+            } catch (error) {
+                log('❌ Recording test failed: ' + error.message, 'error');
+            }
+        });
+
+        // Test 3: Test speech recognition
+        document.getElementById('testSpeechRecognition').addEventListener('click', () => {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                log('❌ Speech Recognition NOT available in this browser', 'error');
+                log('Try using Chrome, Edge, or Safari', 'warning');
+                return;
+            }
+            
+            log('✅ Speech Recognition is available!', 'success');
+            
+            try {
+                const recognition = new SpeechRecognition();
+                recognition.lang = 'en-US';
+                recognition.continuous = false;
+                recognition.interimResults = true;
+                
+                log('🎤 Starting speech recognition... Speak now!', 'info');
+                
+                recognition.onstart = () => {
+                    log('🔴 Listening...', 'success');
+                };
+                
+                recognition.onresult = (event) => {
+                    let transcript = '';
+                    for (let i = 0; i < event.results.length; i++) {
+                        transcript += event.results[i][0].transcript;
+                    }
+                    log('Heard: "' + transcript + '"', 'success');
+                };
+                
+                recognition.onerror = (event) => {
+                    log('❌ Speech recognition error: ' + event.error, 'error');
+                    if (event.error === 'no-speech') {
+                        log('No speech detected. Try speaking louder.', 'warning');
+                    }
+                };
+                
+                recognition.onend = () => {
+                    log('Speech recognition ended', 'info');
+                };
+                
+                recognition.start();
+                
+            } catch (error) {
+                log('❌ Speech recognition failed: ' + error.message, 'error');
+            }
+        });
+
+        // Log browser info
+        log('Browser: ' + navigator.userAgent, 'info');
+        log('HTTPS: ' + (window.location.protocol === 'https:' ? '✅ Yes' : '❌ No - Microphone requires HTTPS!'), window.location.protocol === 'https:' ? 'success' : 'error');
+        log('Ready! Click buttons above to test.', 'success');
+    </script>
+</body>
+</html>

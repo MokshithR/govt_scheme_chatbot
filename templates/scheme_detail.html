@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ scheme.title }} - Government Scheme Details</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      color: #1a202c;
+    }
+    
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: rgba(255, 255, 255, 0.95);
+      color: #667eea;
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .back-btn:hover {
+      transform: translateX(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .detail-card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 3rem 2.5rem;
+      color: white;
+    }
+    
+    .header h1 {
+      font-size: 2.25rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      line-height: 1.3;
+    }
+    
+    .header-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      padding: 2rem 2.5rem;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      font-size: 1rem;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+    
+    .btn-secondary {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+    }
+    
+    .content {
+      padding: 2.5rem;
+    }
+    
+    .section {
+      margin-bottom: 2.5rem;
+    }
+    
+    .section:last-child {
+      margin-bottom: 0;
+    }
+    
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 3px solid #e2e8f0;
+    }
+    
+    .section-title svg {
+      color: #667eea;
+    }
+    
+    .field {
+      margin-bottom: 1.5rem;
+    }
+    
+    .field-label {
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .field-value {
+      color: #1e293b;
+      line-height: 1.7;
+      font-size: 1.05rem;
+    }
+    
+    .field-value p {
+      margin-bottom: 0.75rem;
+    }
+    
+    .tags-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    
+    .tag {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+      color: #4338ca;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: 1px solid #c7d2fe;
+    }
+    
+    .docs-list {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .docs-list li {
+      padding: 0.75rem 1rem;
+      background: #f8fafc;
+      border-left: 4px solid #667eea;
+      margin-bottom: 0.5rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    
+    .docs-list li svg {
+      color: #667eea;
+      flex-shrink: 0;
+    }
+    
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .contact-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1.25rem;
+      background: #f8fafc;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .contact-item svg {
+      color: #667eea;
+      flex-shrink: 0;
+      margin-top: 0.25rem;
+    }
+    
+    .contact-label {
+      font-weight: 600;
+      color: #64748b;
+      font-size: 0.85rem;
+      margin-bottom: 0.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .contact-value {
+      color: #1e293b;
+      font-weight: 500;
+      word-break: break-all;
+    }
+    
+    .contact-value a {
+      color: #667eea;
+      text-decoration: none;
+    }
+    
+    .contact-value a:hover {
+      text-decoration: underline;
+    }
+    
+    .translation-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    
+    .translation-item {
+      padding: 1rem;
+      background: #f8fafc;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .translation-lang {
+      font-weight: 700;
+      color: #667eea;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    
+    .translation-text {
+      color: #475569;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    
+    .info-box {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border-left: 4px solid #f59e0b;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+    }
+    
+    .info-box-title {
+      font-weight: 700;
+      color: #92400e;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .info-box-content {
+      color: #78350f;
+      line-height: 1.6;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .lang-btn {
+      padding: 0.6rem 1.2rem;
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.95);
+      color: #667eea;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+    
+    .lang-btn:hover {
+      background: rgba(102, 126, 234, 0.3) !important;
+      border-color: #667eea !important;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .lang-btn.active {
+      background: rgba(102, 126, 234, 0.2) !important;
+      border-color: #667eea !important;
+      box-shadow: 0 3px 10px rgba(102, 126, 234, 0.2);
+    }
+    
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      backdrop-filter: blur(5px);
+    }
+    
+    .loading-overlay.active {
+      display: flex;
+    }
+    
+    .loading-content {
+      background: white;
+      padding: 2rem 3rem;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem 0.5rem;
+      }
+      
+      .header {
+        padding: 2rem 1.5rem;
+      }
+      
+      .header h1 {
+        font-size: 1.75rem;
+      }
+      
+      .action-buttons {
+        padding: 1.5rem;
+      }
+      
+      .content {
+        padding: 1.5rem;
+      }
+      
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+      <a href="{% url 'chatbot:schemes_all' %}" class="back-btn" id="back-btn" style="margin-bottom: 0;">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
+        </svg>
+        <span id="back-btn-text">Back to All Schemes</span>
+      </a>
+      
+      <div class="language-switcher" style="display: flex; gap: 0.5rem;">
+        <button class="lang-btn active" data-lang="en" onclick="switchLanguage('en')">
+          🇺🇸 English
+        </button>
+        <button class="lang-btn" data-lang="hi" onclick="switchLanguage('hi')">
+          🇮🇳 हिन्दी
+        </button>
+        <button class="lang-btn" data-lang="kn" onclick="switchLanguage('kn')">
+          🇮🇳 ಕನ್ನಡ
+        </button>
+      </div>
+    </div>
+    
+    <div class="detail-card">
+      <!-- Header Section -->
+      <div class="header">
+        <h1>{{ display_title }}</h1>
+        <div class="header-meta">
+          {% if sector_name %}
+          <span class="badge">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/>
+            </svg>
+            {{ sector_name }}
+          </span>
+          {% endif %}
+          {% if display_government_level %}
+          <span class="badge">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/>
+            </svg>
+            {{ display_government_level|capfirst }}
+          </span>
+          {% endif %}
+          {% if display_state %}
+          <span class="badge">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+            </svg>
+            {{ display_state }}
+          </span>
+          {% endif %}
+          {% if scheme.is_active %}
+          <span class="badge" style="background: rgba(16, 185, 129, 0.3);">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            Active
+          </span>
+          {% endif %}
+        </div>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        {% if scheme.application_link %}
+        <a href="{{ scheme.application_link }}" target="_blank" class="btn btn-primary">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+          </svg>
+          Apply Now
+        </a>
+        {% endif %}
+        {% if scheme.website %}
+        <a href="{{ scheme.website }}" target="_blank" class="btn btn-secondary">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.523-1.943A5.977 5.977 0 0116 10c0 .34-.028.675-.083 1H15a2 2 0 00-2 2v2.197A5.973 5.973 0 0110 16v-2a2 2 0 00-2-2 2 2 0 01-2-2 2 2 0 00-1.668-1.973z" clip-rule="evenodd"/>
+          </svg>
+          Visit Official Website
+        </a>
+        {% endif %}
+      </div>
+      
+      <!-- Content Sections -->
+      <div class="content">
+        
+        <!-- About Section -->
+        <div class="section">
+          <h2 class="section-title">
+            <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+            About This Scheme
+          </h2>
+          {% if display_short_description %}
+          <div class="info-box">
+            <div class="info-box-title">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+              </svg>
+              Quick Summary
+            </div>
+            <div class="info-box-content">{{ display_short_description }}</div>
+          </div>
+          {% endif %}
+          <div class="field">
+            <div class="field-label">Full Description</div>
+            <div class="field-value">{{ display_description|linebreaks }}</div>
+          </div>
+        </div>
+        
+        <!-- Government Information -->
+        <div class="section">
+          <h2 class="section-title">
+            <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd"/>
+            </svg>
+            Government Information
+          </h2>
+          <div class="contact-grid">
+            {% if display_ministry %}
+            <div class="contact-item">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd"/>
+              </svg>
+              <div>
+                <div class="contact-label">Ministry</div>
+                <div class="contact-value">{{ display_ministry }}</div>
+              </div>
+            </div>
+            {% endif %}
+            {% if display_department %}
+            <div class="contact-item">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+              </svg>
+              <div>
+                <div class="contact-label">Department</div>
+                <div class="contact-value">{{ display_department }}</div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <!-- Eligibility Section -->
+        {% if display_eligibility %}
+        <div class="section">
+          <h2 class="section-title">
+            <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+            </svg>
+            Eligibility Criteria
+          </h2>
+          <div class="field">
+            <div class="field-value">{{ display_eligibility|linebreaks }}</div>
+          </div>
+        </div>
+        {% endif %}
+        
+        <!-- Benefits Section -->
+        {% if display_benefits %}
+        <div class="section">
+          <h2 class="section-title">
+            <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+            </svg>
+            Benefits
+          </h2>
+          <div class="field">
+            <div class="field-value">{{ display_benefits|linebreaks }}</div>
+          </div>
+          {% if display_financial_assistance %}
+          <div class="field">
+            <div class="field-label">Financial Assistance</div>
+            <div class="field-value">{{ display_financial_assistance|linebreaks }}</div>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+        
+        <!-- Required Documents -->
+        {% if required_documents %}
+        <div class="section">
+          <h2 class="section-title">
+            <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
+            </svg>
+            Required Documents
+          </h2>
+          <ul class="docs-list">
+            {% for doc in required_documents %}
+            <li>
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              {{ doc }}
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+        
+        <!-- Application Process -->
+        {% if display_application_process %}
+        <div class="section">
+          <h2 class="section-title">
+            <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+              <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            How to Apply
+          </h2>
+          <div class="field">
+            <div class="field-value">{{ display_application_process|linebreaks }}</div>
+          </div>
+        </div>
+        {% endif %}
+        
+        <!-- Important Dates -->
+        {% if launch_date_formatted or last_date_formatted or scheme.validity_period %}
+        <div class="section">
+          <h2 class="section-title">
+            <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+            </svg>
+            Important Dates
+          </h2>
+          <div class="contact-grid">
+            {% if launch_date_formatted %}
+            <div class="contact-item">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+              </svg>
+              <div>
+                <div class="contact-label">Launch Date</div>
+                <div class="contact-value">{{ launch_date_formatted }}</div>
+              </div>
+            </div>
+            {% endif %}
+            {% if last_date_formatted %}
+            <div class="contact-item">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+              </svg>
+              <div>
+                <div class="contact-label">Last Date to Apply</div>
+                <div class="contact-value">{{ last_date_formatted }}</div>
+              </div>
+            </div>
+            {% endif %}
+            {% if scheme.validity_period %}
+            <div class="contact-item">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+              </svg>
+              <div>
+                <div class="contact-label">Validity Period</div>
+                <div class="contact-value">{{ scheme.validity_period }}</div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+        
+        <!-- Contact Information -->
+        <div class="section">
+          <h2 class="section-title">
+            <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
+            </svg>
+            Contact Information
+          </h2>
+          <div class="contact-grid">
+            {% if scheme.helpline_number %}
+            <div class="contact-item">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
+              </svg>
+              <div>
+                <div class="contact-label">Helpline</div>
+                <div class="contact-value"><a href="tel:{{ scheme.helpline_number }}">{{ scheme.helpline_number }}</a></div>
+              </div>
+            </div>
+            {% endif %}
+            {% if scheme.email %}
+            <div class="contact-item">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+              </svg>
+              <div>
+                <div class="contact-label">Email</div>
+                <div class="contact-value"><a href="mailto:{{ scheme.email }}">{{ scheme.email }}</a></div>
+              </div>
+            </div>
+            {% endif %}
+            {% if scheme.website %}
+            <div class="contact-item">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.523-1.943A5.977 5.977 0 0116 10c0 .34-.028.675-.083 1H15a2 2 0 00-2 2v2.197A5.973 5.973 0 0110 16v-2a2 2 0 00-2-2 2 2 0 01-2-2 2 2 0 00-1.668-1.973z" clip-rule="evenodd"/>
+              </svg>
+              <div>
+                <div class="contact-label">Website</div>
+                <div class="contact-value"><a href="{{ scheme.website }}" target="_blank">{{ scheme.website }}</a></div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <!-- Keywords and Tags -->
+        {% if keywords or search_tags %}
+        <div class="section">
+          <h2 class="section-title">
+            <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+            </svg>
+            Keywords & Tags
+          </h2>
+          {% if keywords %}
+          <div class="field">
+            <div class="field-label">Keywords</div>
+            <div class="tags-list">
+              {% for keyword in keywords %}
+              <span class="tag">{{ keyword }}</span>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+          {% if search_tags %}
+          <div class="field">
+            <div class="field-label">Search Tags</div>
+            <div class="tags-list">
+              {% for tag in search_tags %}
+              <span class="tag">{{ tag }}</span>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+        
+        <!-- Translations -->
+        {% if title_translations or description_translations %}
+        <div class="section">
+          <h2 class="section-title">
+            <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M7 2a1 1 0 011 1v1h3a1 1 0 110 2H9.578a18.87 18.87 0 01-1.724 4.78c.29.354.596.696.914 1.026a1 1 0 11-1.44 1.389c-.188-.196-.373-.396-.554-.6a19.098 19.098 0 01-3.107 3.567 1 1 0 01-1.334-1.49 17.087 17.087 0 003.13-3.733 18.992 18.992 0 01-1.487-2.494 1 1 0 111.79-.89c.234.47.489.928.764 1.372.417-.934.752-1.913.997-2.927H3a1 1 0 110-2h3V3a1 1 0 011-1zm6 6a1 1 0 01.894.553l2.991 5.982a.869.869 0 01.02.037l.99 1.98a1 1 0 11-1.79.895L15.383 16h-4.764l-.724 1.447a1 1 0 11-1.788-.894l.99-1.98.019-.038 2.99-5.982A1 1 0 0113 8zm-1.382 6h2.764L13 11.236 11.618 14z" clip-rule="evenodd"/>
+            </svg>
+            Available Translations
+          </h2>
+          {% if title_translations %}
+          <div class="field">
+            <div class="field-label">Title Translations</div>
+            <div class="translation-grid">
+              {% for lang, text in title_translations.items %}
+              <div class="translation-item">
+                <div class="translation-lang">{{ lang|upper }}</div>
+                <div class="translation-text">{{ text }}</div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+          {% if description_translations %}
+          <div class="field">
+            <div class="field-label">Description Translations</div>
+            <div class="translation-grid">
+              {% for lang, text in description_translations.items %}
+              <div class="translation-item">
+                <div class="translation-lang">{{ lang|upper }}</div>
+                <div class="translation-text">{{ text|truncatewords:30 }}</div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+        
+        <!-- Additional Information -->
+        {% if sub_sectors %}
+        <div class="section">
+          <h2 class="section-title">
+            <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"/>
+            </svg>
+            Additional Sectors
+          </h2>
+          <div class="tags-list">
+            {% for subsector in sub_sectors %}
+            <span class="tag">{{ subsector }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        
+        <!-- Metadata -->
+        <div class="section" style="border-top: 2px solid #e2e8f0; padding-top: 2rem; margin-top: 2rem;">
+          <div class="contact-grid">
+            {% if scheme.origin %}
+            <div class="contact-item">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+              </svg>
+              <div>
+                <div class="contact-label">Source</div>
+                <div class="contact-value">{{ scheme.origin }}</div>
+              </div>
+            </div>
+            {% endif %}
+            {% if scheme.last_updated %}
+            <div class="contact-item">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+              </svg>
+              <div>
+                <div class="contact-label">Last Updated</div>
+                <div class="contact-value">{{ scheme.last_updated|date:"F d, Y" }}</div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+  
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p style="margin-top: 1rem; font-size: 1.1rem; font-weight: 600; color: #667eea;" class="loading-text">Translating...</p>
+    </div>
+  </div>
+  
+  <script>
+    let currentLanguage = 'en';
+    const schemeId = parseInt('{{ scheme.id|default:"0" }}') || 0;
+    
+    // Translation strings for UI elements
+    const translations = {
+      'en': {
+        'back-btn': 'Back to All Schemes',
+        'loading': 'Translating...',
+        'about': 'About This Scheme',
+        'quick-summary': 'Quick Summary',
+        'full-description': 'Full Description',
+        'govt-info': 'Government Information',
+        'ministry': 'Ministry',
+        'department': 'Department',
+        'eligibility': 'Eligibility Criteria',
+        'benefits': 'Benefits',
+        'financial': 'Financial Assistance',
+        'documents': 'Required Documents',
+        'how-to-apply': 'How to Apply',
+        'important-dates': 'Important Dates',
+        'launch-date': 'Launch Date',
+        'last-date': 'Last Date to Apply',
+        'validity': 'Validity Period',
+        'contact': 'Contact Information',
+        'helpline': 'Helpline',
+        'email': 'Email',
+        'website': 'Website',
+        'apply-now': 'Apply Now',
+        'visit-website': 'Visit Official Website',
+        'active': 'Active',
+        'central': 'Central',
+        'state': 'State'
+      },
+      'hi': {
+        'back-btn': 'सभी योजनाओं पर वापस जाएं',
+        'loading': 'अनुवाद हो रहा है...',
+        'about': 'इस योजना के बारे में',
+        'quick-summary': 'संक्षिप्त सारांश',
+        'full-description': 'पूर्ण विवरण',
+        'govt-info': 'सरकारी जानकारी',
+        'ministry': 'मंत्रालय',
+        'department': 'विभाग',
+        'eligibility': 'पात्रता मानदंड',
+        'benefits': 'लाभ',
+        'financial': 'वित्तीय सहायता',
+        'documents': 'आवश्यक दस्तावेज',
+        'how-to-apply': 'आवेदन कैसे करें',
+        'important-dates': 'महत्वपूर्ण तिथियां',
+        'launch-date': 'प्रारंभ तिथि',
+        'last-date': 'आवेदन करने की अंतिम तिथि',
+        'validity': 'वैधता अवधि',
+        'contact': 'संपर्क जानकारी',
+        'helpline': 'हेल्पलाइन',
+        'email': 'ईमेल',
+        'website': 'वेबसाइट',
+        'apply-now': 'अभी आवेदन करें',
+        'visit-website': 'आधिकारिक वेबसाइट पर जाएं',
+        'active': 'सक्रिय',
+        'central': 'केंद्रीय',
+        'state': 'राज्य'
+      },
+      'kn': {
+        'back-btn': 'ಎಲ್ಲಾ ಯೋಜನೆಗಳಿಗೆ ಹಿಂತಿರುಗಿ',
+        'loading': 'ಅನುವಾದಿಸಲಾಗುತ್ತಿದೆ...',
+        'about': 'ಈ ಯೋಜನೆ ಬಗ್ಗೆ',
+        'quick-summary': 'ಸಂಕ್ಷಿಪ್ತ ಸಾರಾಂಶ',
+        'full-description': 'ಸಂಪೂರ್ಣ ವಿವರಣೆ',
+        'govt-info': 'ಸರ್ಕಾರಿ ಮಾಹಿತಿ',
+        'ministry': 'ಸಚಿವಾಲಯ',
+        'department': 'ಇಲಾಖೆ',
+        'eligibility': 'ಅರ್ಹತಾ ಮಾನದಂಡಗಳು',
+        'benefits': 'ಪ್ರಯೋಜನಗಳು',
+        'financial': 'ಆರ್ಥಿಕ ನೆರವು',
+        'documents': 'ಅಗತ್ಯ ದಾಖಲೆಗಳು',
+        'how-to-apply': 'ಅರ್ಜಿ ಸಲ್ಲಿಸುವುದು ಹೇಗೆ',
+        'important-dates': 'ಪ್ರಮುಖ ದಿನಾಂಕಗಳು',
+        'launch-date': 'ಪ್ರಾರಂಭ ದಿನಾಂಕ',
+        'last-date': 'ಅರ್ಜಿ ಸಲ್ಲಿಸುವ ಕೊನೆಯ ದಿನಾಂಕ',
+        'validity': 'ಮಾನ್ಯತೆ ಅವಧಿ',
+        'contact': 'ಸಂಪರ್ಕ ಮಾಹಿತಿ',
+        'helpline': 'ಹೆಲ್ಪ್‌ಲೈನ್',
+        'email': 'ಇಮೇಲ್',
+        'website': 'ವೆಬ್‌ಸೈಟ್',
+        'apply-now': 'ಈಗ ಅರ್ಜಿ ಸಲ್ಲಿಸಿ',
+        'visit-website': 'ಅಧಿಕೃತ ವೆಬ್‌ಸೈಟ್‌ಗೆ ಭೇಟಿ ನೀಡಿ',
+        'active': 'ಸಕ್ರಿಯ',
+        'central': 'ಕೇಂದ್ರ',
+        'state': 'ರಾಜ್ಯ'
+      }
+    };
+    
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+    
+    function showLoadingOverlay() {
+      const overlay = document.getElementById('loadingOverlay');
+      overlay.classList.add('active');
+    }
+    
+    function hideLoadingOverlay() {
+      const overlay = document.getElementById('loadingOverlay');
+      overlay.classList.remove('active');
+    }
+    
+    function getLanguageFromURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const lang = urlParams.get('lang');
+      return lang && ['en', 'hi', 'kn'].includes(lang) ? lang : 'en';
+    }
+    
+    function updateBackButton(lang) {
+      const backBtn = document.getElementById('back-btn');
+      if (backBtn) {
+        const baseUrl = backBtn.href.split('?')[0];
+        backBtn.href = `${baseUrl}?lang=${lang}`;
+      }
+    }
+    
+    async function translateSchemeDetail(lang) {
+      try {
+        console.log('Starting scheme detail translation to', lang);
+        
+        // Check cache first
+        const cacheKey = `scheme_detail_${schemeId}_${lang}`;
+        const cacheTimestampKey = `${cacheKey}_timestamp`;
+        const cacheValidityDays = 7;
+        
+        const cachedData = localStorage.getItem(cacheKey);
+        const cacheTimestamp = localStorage.getItem(cacheTimestampKey);
+        
+        if (cachedData && cacheTimestamp) {
+          const cacheAge = Date.now() - parseInt(cacheTimestamp);
+          const cacheValidityMs = cacheValidityDays * 24 * 60 * 60 * 1000;
+          
+          if (cacheAge < cacheValidityMs) {
+            console.log('✅ Using cached translation (age: ' + Math.floor(cacheAge / (1000 * 60 * 60 * 24)) + ' days)');
+            const translation = JSON.parse(cachedData);
+            applyTranslation(translation);
+            return;
+          } else {
+            console.log('⚠️ Cache expired, fetching new translation');
+          }
+        }
+        
+        // Call API to translate scheme detail
+        const response = await fetch('/api/translate/scheme-detail/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: JSON.stringify({
+            scheme_id: schemeId,
+            target_language: lang
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Translation API failed');
+        }
+        
+        const data = await response.json();
+        
+        console.log('API Response:', data);
+        
+        if (data.status === 'success') {
+          console.log('Translation data received:', data.translation);
+          
+          // Cache the translation
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify(data.translation));
+            localStorage.setItem(cacheTimestampKey, Date.now().toString());
+            console.log('✅ Translation cached');
+          } catch (e) {
+            console.warn('⚠️ Failed to cache translation:', e);
+          }
+          
+          applyTranslation(data.translation);
+        } else {
+          console.error('API returned error status:', data);
+          throw new Error(data.message || 'Translation failed');
+        }
+      } catch (error) {
+        console.error('Translation error:', error);
+        throw error;
+      }
+    }
+    
+    function applyTranslation(translation) {
+      console.log('Applying translation:', translation);
+      console.log('Translation keys:', Object.keys(translation));
+      
+      // Update title
+      const titleEl = document.querySelector('.header h1');
+      if (titleEl && translation.title) {
+        if (!titleEl.hasAttribute('data-original-text')) {
+          titleEl.setAttribute('data-original-text', titleEl.textContent);
+        }
+        titleEl.textContent = translation.title;
+        console.log('✅ Title translated');
+      }
+      
+      // Update sector badge
+      const sectorBadge = document.querySelector('.badge');
+      if (sectorBadge && translation.sector_name) {
+        const svg = sectorBadge.querySelector('svg');
+        if (!sectorBadge.hasAttribute('data-original-text')) {
+          sectorBadge.setAttribute('data-original-text', sectorBadge.textContent.trim());
+        }
+        sectorBadge.innerHTML = '';
+        if (svg) sectorBadge.appendChild(svg.cloneNode(true));
+        sectorBadge.appendChild(document.createTextNode(' ' + translation.sector_name));
+        console.log('✅ Sector translated');
+      }
+      
+      // Update government level badge
+      const allBadges = document.querySelectorAll('.badge');
+      allBadges.forEach(badge => {
+        const text = badge.textContent.trim().toLowerCase();
+        if (text.includes('central') || text.includes('state') || text.includes('केंद्रीय') || text.includes('राज्य') || text.includes('ಕೇಂದ್ರ') || text.includes('ರಾಜ್ಯ')) {
+          if (translation.government_level) {
+            const svg = badge.querySelector('svg');
+            if (!badge.hasAttribute('data-original-text')) {
+              badge.setAttribute('data-original-text', badge.textContent.trim());
+            }
+            badge.innerHTML = '';
+            if (svg) badge.appendChild(svg.cloneNode(true));
+            badge.appendChild(document.createTextNode(' ' + translation.government_level));
+          }
+        }
+      });
+      
+      // Update state badge
+      allBadges.forEach(badge => {
+        const svg = badge.querySelector('svg');
+        if (svg && svg.querySelector('path[d*="M5.05"]')) { // Location icon
+          if (translation.state && !badge.textContent.includes('Active')) {
+            if (!badge.hasAttribute('data-original-text')) {
+              badge.setAttribute('data-original-text', badge.textContent.trim());
+            }
+            badge.innerHTML = '';
+            badge.appendChild(svg.cloneNode(true));
+            badge.appendChild(document.createTextNode(' ' + translation.state));
+          }
+        }
+      });
+      
+      // Update short description
+      const shortDescEl = document.querySelector('.info-box-content');
+      if (shortDescEl && translation.short_description) {
+        if (!shortDescEl.hasAttribute('data-original-text')) {
+          shortDescEl.setAttribute('data-original-text', shortDescEl.textContent);
+        }
+        shortDescEl.textContent = translation.short_description;
+      }
+      
+      // Update all field-value elements (description, eligibility, benefits, etc.)
+      const fieldValues = document.querySelectorAll('.field-value');
+      let fieldIndex = 0;
+      
+      // Description (first field-value)
+      if (fieldValues[fieldIndex] && translation.description) {
+        if (!fieldValues[fieldIndex].hasAttribute('data-original-html')) {
+          fieldValues[fieldIndex].setAttribute('data-original-html', fieldValues[fieldIndex].innerHTML);
+        }
+        fieldValues[fieldIndex].innerHTML = translation.description.replace(/\n/g, '<br>');
+        fieldIndex++;
+      }
+      
+      // Eligibility criteria
+      if (translation.eligibility_criteria) {
+        const eligibilitySection = Array.from(document.querySelectorAll('.section-title')).find(el => 
+          el.textContent.includes('Eligibility') || el.textContent.includes('पात्रता') || el.textContent.includes('ಅರ್ಹತಾ')
+        );
+        if (eligibilitySection) {
+          const eligibilityField = eligibilitySection.parentElement.querySelector('.field-value');
+          if (eligibilityField) {
+            if (!eligibilityField.hasAttribute('data-original-html')) {
+              eligibilityField.setAttribute('data-original-html', eligibilityField.innerHTML);
+            }
+            eligibilityField.innerHTML = translation.eligibility_criteria.replace(/\n/g, '<br>');
+          }
+        }
+      }
+      
+      // Benefits
+      if (translation.benefits) {
+        const benefitsSection = Array.from(document.querySelectorAll('.section-title')).find(el => 
+          el.textContent.includes('Benefits') || el.textContent.includes('लाभ') || el.textContent.includes('ಪ್ರಯೋಜನಗಳು')
+        );
+        if (benefitsSection) {
+          const benefitsField = benefitsSection.parentElement.querySelector('.field-value');
+          if (benefitsField) {
+            if (!benefitsField.hasAttribute('data-original-html')) {
+              benefitsField.setAttribute('data-original-html', benefitsField.innerHTML);
+            }
+            benefitsField.innerHTML = translation.benefits.replace(/\n/g, '<br>');
+          }
+        }
+      }
+      
+      // Financial assistance
+      if (translation.financial_assistance) {
+        const financialLabel = Array.from(document.querySelectorAll('.field-label')).find(el => 
+          el.textContent.includes('Financial') || el.textContent.includes('वित्तीय') || el.textContent.includes('ಆರ್ಥಿಕ')
+        );
+        if (financialLabel) {
+          const financialField = financialLabel.parentElement.querySelector('.field-value');
+          if (financialField) {
+            if (!financialField.hasAttribute('data-original-html')) {
+              financialField.setAttribute('data-original-html', financialField.innerHTML);
+            }
+            financialField.innerHTML = translation.financial_assistance.replace(/\n/g, '<br>');
+          }
+        }
+      }
+      
+      // Application process
+      if (translation.application_process) {
+        const applySection = Array.from(document.querySelectorAll('.section-title')).find(el => 
+          el.textContent.includes('How to Apply') || el.textContent.includes('आवेदन कैसे करें') || el.textContent.includes('ಅರ್ಜಿ ಸಲ್ಲಿಸುವುದು')
+        );
+        if (applySection) {
+          const applyField = applySection.parentElement.querySelector('.field-value');
+          if (applyField) {
+            if (!applyField.hasAttribute('data-original-html')) {
+              applyField.setAttribute('data-original-html', applyField.innerHTML);
+            }
+            applyField.innerHTML = translation.application_process.replace(/\n/g, '<br>');
+          }
+        }
+      }
+      
+      // Ministry
+      if (translation.ministry) {
+        const ministryValue = Array.from(document.querySelectorAll('.contact-value')).find((el, idx) => {
+          const label = document.querySelectorAll('.contact-label')[idx];
+          return label && (label.textContent.includes('Ministry') || label.textContent.includes('मंत्रालय') || label.textContent.includes('ಸಚಿವಾಲಯ'));
+        });
+        if (ministryValue) {
+          if (!ministryValue.hasAttribute('data-original-text')) {
+            ministryValue.setAttribute('data-original-text', ministryValue.textContent);
+          }
+          ministryValue.textContent = translation.ministry;
+        }
+      }
+      
+      // Department
+      if (translation.department) {
+        const deptValue = Array.from(document.querySelectorAll('.contact-value')).find((el, idx) => {
+          const label = document.querySelectorAll('.contact-label')[idx];
+          return label && (label.textContent.includes('Department') || label.textContent.includes('विभाग') || label.textContent.includes('ಇಲಾಖೆ'));
+        });
+        if (deptValue) {
+          if (!deptValue.hasAttribute('data-original-text')) {
+            deptValue.setAttribute('data-original-text', deptValue.textContent);
+          }
+          deptValue.textContent = translation.department;
+        }
+      }
+      
+      // Validity period
+      if (translation.validity_period) {
+        const validityValue = Array.from(document.querySelectorAll('.contact-value')).find((el, idx) => {
+          const label = document.querySelectorAll('.contact-label')[idx];
+          return label && (label.textContent.includes('Validity') || label.textContent.includes('वैधता') || label.textContent.includes('ಮಾನ್ಯತೆ'));
+        });
+        if (validityValue) {
+          if (!validityValue.hasAttribute('data-original-text')) {
+            validityValue.setAttribute('data-original-text', validityValue.textContent);
+          }
+          validityValue.textContent = translation.validity_period;
+        }
+      }
+      
+      console.log('✅ Translation applied to all fields');
+    }
+    
+    function resetToEnglish() {
+      // Reset title
+      const titleEl = document.querySelector('.header h1');
+      if (titleEl && titleEl.hasAttribute('data-original-text')) {
+        titleEl.textContent = titleEl.getAttribute('data-original-text');
+      }
+      
+      // Reset all elements with original text
+      document.querySelectorAll('[data-original-text]').forEach(el => {
+        el.textContent = el.getAttribute('data-original-text');
+      });
+      
+      document.querySelectorAll('[data-original-html]').forEach(el => {
+        el.innerHTML = el.getAttribute('data-original-html');
+      });
+      
+      console.log('✅ Reset to English');
+    }
+    
+    function translateStaticUI(lang) {
+      const t = translations[lang] || translations['en'];
+      
+      // Update back button text
+      const backBtnText = document.getElementById('back-btn-text');
+      if (backBtnText) {
+        backBtnText.textContent = t['back-btn'];
+      }
+      
+      // Update loading text
+      const loadingText = document.querySelector('.loading-text');
+      if (loadingText) {
+        loadingText.textContent = t['loading'];
+      }
+      
+      // Update section headings
+      const sectionTitles = document.querySelectorAll('.section-title');
+      sectionTitles.forEach(title => {
+        const text = title.textContent.trim();
+        if (!title.hasAttribute('data-original-text')) {
+          title.setAttribute('data-original-text', text);
+        }
+        
+        const svg = title.querySelector('svg');
+        
+        if (text.includes('About') || text.includes('बारे') || text.includes('ಬಗ್ಗೆ')) {
+          title.innerHTML = '';
+          if (svg) title.appendChild(svg.cloneNode(true));
+          title.appendChild(document.createTextNode(' ' + t['about']));
+        } else if (text.includes('Government Information') || text.includes('सरकारी जानकारी') || text.includes('ಸರ್ಕಾರಿ ಮಾಹಿತಿ')) {
+          title.innerHTML = '';
+          if (svg) title.appendChild(svg.cloneNode(true));
+          title.appendChild(document.createTextNode(' ' + t['govt-info']));
+        } else if (text.includes('Eligibility') || text.includes('पात्रता') || text.includes('ಅರ್ಹತಾ')) {
+          title.innerHTML = '';
+          if (svg) title.appendChild(svg.cloneNode(true));
+          title.appendChild(document.createTextNode(' ' + t['eligibility']));
+        } else if (text.includes('Benefits') || text.includes('लाभ') || text.includes('ಪ್ರಯೋಜನಗಳು')) {
+          title.innerHTML = '';
+          if (svg) title.appendChild(svg.cloneNode(true));
+          title.appendChild(document.createTextNode(' ' + t['benefits']));
+        } else if (text.includes('Required Documents') || text.includes('आवश्यक दस्तावेज') || text.includes('ಅಗತ್ಯ ದಾಖಲೆಗಳು')) {
+          title.innerHTML = '';
+          if (svg) title.appendChild(svg.cloneNode(true));
+          title.appendChild(document.createTextNode(' ' + t['documents']));
+        } else if (text.includes('How to Apply') || text.includes('आवेदन कैसे करें') || text.includes('ಅರ್ಜಿ ಸಲ್ಲಿಸುವುದು')) {
+          title.innerHTML = '';
+          if (svg) title.appendChild(svg.cloneNode(true));
+          title.appendChild(document.createTextNode(' ' + t['how-to-apply']));
+        } else if (text.includes('Important Dates') || text.includes('महत्वपूर्ण तिथियां') || text.includes('ಪ್ರಮುಖ ದಿನಾಂಕಗಳು')) {
+          title.innerHTML = '';
+          if (svg) title.appendChild(svg.cloneNode(true));
+          title.appendChild(document.createTextNode(' ' + t['important-dates']));
+        } else if (text.includes('Contact Information') || text.includes('संपर्क जानकारी') || text.includes('ಸಂಪರ್ಕ ಮಾಹಿತಿ')) {
+          title.innerHTML = '';
+          if (svg) title.appendChild(svg.cloneNode(true));
+          title.appendChild(document.createTextNode(' ' + t['contact']));
+        }
+      });
+      
+      // Update field labels
+      const fieldLabels = document.querySelectorAll('.field-label');
+      fieldLabels.forEach(label => {
+        const text = label.textContent.trim();
+        if (!label.hasAttribute('data-original-text')) {
+          label.setAttribute('data-original-text', text);
+        }
+        
+        if (text.includes('Full Description') || text.includes('पूर्ण विवरण') || text.includes('ಸಂಪೂರ್ಣ ವಿವರಣೆ')) {
+          label.textContent = t['full-description'];
+        } else if (text.includes('Financial') || text.includes('वित्तीय') || text.includes('ಆರ್ಥಿಕ')) {
+          label.textContent = t['financial'];
+        }
+      });
+      
+      // Update contact labels
+      const contactLabels = document.querySelectorAll('.contact-label');
+      contactLabels.forEach(label => {
+        const text = label.textContent.trim();
+        if (!label.hasAttribute('data-original-text')) {
+          label.setAttribute('data-original-text', text);
+        }
+        
+        if (text.includes('Ministry') || text.includes('मंत्रालय') || text.includes('ಸಚಿವಾಲಯ')) {
+          label.textContent = t['ministry'];
+        } else if (text.includes('Department') || text.includes('विभाग') || text.includes('ಇಲಾಖೆ')) {
+          label.textContent = t['department'];
+        } else if (text.includes('Launch Date') || text.includes('प्रारंभ तिथि') || text.includes('ಪ್ರಾರಂಭ ದಿನಾಂಕ')) {
+          label.textContent = t['launch-date'];
+        } else if (text.includes('Last Date') || text.includes('अंतिम तिथि') || text.includes('ಕೊನೆಯ ದಿನಾಂಕ')) {
+          label.textContent = t['last-date'];
+        } else if (text.includes('Validity') || text.includes('वैधता') || text.includes('ಮಾನ್ಯತೆ')) {
+          label.textContent = t['validity'];
+        } else if (text.includes('Helpline') || text.includes('हेल्पलाइन') || text.includes('ಹೆಲ್ಪ್')) {
+          label.textContent = t['helpline'];
+        } else if (text.includes('Email') || text.includes('ईमेल') || text.includes('ಇಮೇಲ್')) {
+          label.textContent = t['email'];
+        } else if (text.includes('Website') || text.includes('वेबसाइट') || text.includes('ವೆಬ್')) {
+          label.textContent = t['website'];
+        }
+      });
+      
+      // Update info box title
+      const infoBoxTitle = document.querySelector('.info-box-title');
+      if (infoBoxTitle) {
+        const text = infoBoxTitle.textContent.trim();
+        if (!infoBoxTitle.hasAttribute('data-original-text')) {
+          infoBoxTitle.setAttribute('data-original-text', text);
+        }
+        if (text.includes('Quick Summary') || text.includes('संक्षिप्त') || text.includes('ಸಂಕ್ಷಿಪ್ತ')) {
+          const svg = infoBoxTitle.querySelector('svg');
+          infoBoxTitle.innerHTML = '';
+          if (svg) infoBoxTitle.appendChild(svg.cloneNode(true));
+          infoBoxTitle.appendChild(document.createTextNode(' ' + t['quick-summary']));
+        }
+      }
+      
+      // Update button text
+      const applyBtn = document.querySelector('.btn-primary');
+      if (applyBtn) {
+        const text = applyBtn.textContent.trim();
+        if (!applyBtn.hasAttribute('data-original-text')) {
+          applyBtn.setAttribute('data-original-text', text);
+        }
+        if (text.includes('Apply') || text.includes('आवेदन') || text.includes('ಅರ್ಜಿ')) {
+          const svg = applyBtn.querySelector('svg');
+          applyBtn.innerHTML = '';
+          if (svg) applyBtn.appendChild(svg.cloneNode(true));
+          applyBtn.appendChild(document.createTextNode(' ' + t['apply-now']));
+        }
+      }
+      
+      const websiteBtn = document.querySelector('.btn-secondary');
+      if (websiteBtn) {
+        const text = websiteBtn.textContent.trim();
+        if (!websiteBtn.hasAttribute('data-original-text')) {
+          websiteBtn.setAttribute('data-original-text', text);
+        }
+        if (text.includes('Visit') || text.includes('वेबसाइट') || text.includes('ವೆಬ್')) {
+          const svg = websiteBtn.querySelector('svg');
+          websiteBtn.innerHTML = '';
+          if (svg) websiteBtn.appendChild(svg.cloneNode(true));
+          websiteBtn.appendChild(document.createTextNode(' ' + t['visit-website']));
+        }
+      }
+    }
+    
+    async function switchLanguage(lang) {
+      if (currentLanguage === lang) return;
+      
+      console.log(`Switching to language: ${lang}`);
+      showLoadingOverlay();
+      currentLanguage = lang;
+
+      // Update language switcher buttons
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+      });
+
+      try {
+        // Update static UI text first
+        translateStaticUI(lang);
+        
+        // Update back button URL
+        updateBackButton(lang);
+        
+        // Translate or reset content
+        if (lang !== 'en') {
+          console.log('Calling translateSchemeDetail for lang:', lang);
+          await translateSchemeDetail(lang);
+        } else {
+          resetToEnglish();
+        }
+      } catch (error) {
+        console.error('Translation error:', error);
+        alert('Translation failed: ' + error.message + '\n\nPlease try again.');
+      } finally {
+        hideLoadingOverlay();
+      }
+    }
+    
+    // Auto-detect language from URL on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlLang = getLanguageFromURL();
+      if (urlLang !== 'en') {
+        switchLanguage(urlLang);
+      } else {
+        currentLanguage = 'en';
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.getAttribute('data-lang') === 'en');
+        });
+      }
+      
+      // Update back button with current language
+      updateBackButton(urlLang);
+    });
+  </script>
+</body>
+</html>

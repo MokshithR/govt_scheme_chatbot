@@ -22,8 +22,8 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('admin-panel/', include('admin_panel.urls')),
-    path('api/', include('chatbot.urls')),
-    path('', include('chatbot.urls')),  # For direct access to chatbot endpoints
+    # Main chatbot URLs with namespace to support `{% url 'chatbot:...' %}` in templates
+    path('', include(('chatbot.urls', 'chatbot'), namespace='chatbot')),
 ]
 
 # Serve media files during development

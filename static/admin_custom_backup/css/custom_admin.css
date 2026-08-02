@@ -1,0 +1,169 @@
+/* Custom admin theme: modern, clean, professional */
+:root{
+  --admin-bg: #f4f7fb;
+  --primary: #4f46e5; /* indigo-600 */
+  --muted: #6b7280; /* gray-500 */
+  --card-bg: #ffffff;
+  --accent: #7c3aed; /* purple */
+}
+
+html,body {
+  background: var(--admin-bg) !important;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  color: #111827;
+}
+
+/* Load Google font fallback (if online) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+/* Header */
+header#header {
+  background: linear-gradient(90deg, rgba(79,70,229,0.95), rgba(124,58,237,0.95));
+  color: white !important;
+  box-shadow: 0 6px 18px rgba(15,23,42,0.08);
+}
+
+header#header .branding a {
+  color: #fff !important;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+/* Logo tweaks */
+.admin-logo {
+  height: 32px;
+  width: auto;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+/* Main container and cards */
+#content-main, .app-list, .module {
+  background: transparent;
+}
+
+.dashboard-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.dashboard-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 6px 20px rgba(17,24,39,0.06);
+  border: 1px solid rgba(15,23,42,0.03);
+}
+
+/* Ensure list and table text is readable on white cards */
+.module, .app-list, .change-list, .changelist-results, .dashboard-card, .model, #content-main, #content {
+  background: var(--card-bg) !important;
+  color: #111827 !important;
+}
+
+/* Table and changelist styling */
+table, .changelist-results table, table.result_list {
+  background: transparent !important;
+  color: #111827 !important;
+}
+
+table th, table td, .changelist-results th, .changelist-results td {
+  color: #111827 !important;
+  border-color: rgba(15,23,42,0.06) !important;
+}
+
+/* Make titles/descriptions stand out */
+.field-title, .field-box, .field-label, .module h2, .dashboard-card h3 {
+  color: #0f172a !important;
+}
+
+/* Form inputs and selects */
+input, textarea, select, .vTextField, .vLargeTextField, .form-row input, .form-row textarea {
+  background: #ffffff !important;
+  color: #111827 !important;
+  border: 1px solid rgba(15,23,42,0.08) !important;
+  border-radius: 6px !important;
+  padding: 6px 8px !important;
+}
+
+/* Buttons inside admin lists */
+.object-tools a, .object-tools .button, .btn, .submit-row input[type="submit"] {
+  color: #fff !important;
+}
+
+/* Ensure link color is readable */
+a { color: var(--accent) !important }
+
+.dashboard-card h3 { margin: 0 0 8px 0; font-size: 1.05rem; }
+.dashboard-card p { color: var(--muted); margin:0; font-size:0.95rem }
+
+/* Model and object lists */
+.model {
+  background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0.9));
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+/* Buttons */
+.button, .addlink {
+  background: var(--primary) !important;
+  color: white !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  box-shadow: 0 6px 18px rgba(79,70,229,0.12);
+  border: none !important;
+}
+
+.deletelink, .deletelink:hover { background: #ef4444 !important; box-shadow:none }
+
+/* Forms */
+.form-row, .inline-group { background: var(--card-bg); padding:12px; border-radius:8px; margin-bottom:12px }
+
+/* Login page */
+.login { background: linear-gradient(180deg, #eef2ff 0%, #f8fafc 100%); }
+.login-box { border-radius: 12px; box-shadow: 0 10px 30px rgba(2,6,23,0.08); }
+
+/* Quick actions on admin index */
+.quick-actions { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px }
+.quick-action-btn {
+  display:inline-flex; align-items:center; gap:10px;
+  padding:12px 16px; border-radius:10px; background:linear-gradient(180deg, #fff, #fbfbff);
+  box-shadow:0 8px 20px rgba(17,24,39,0.06); border:1px solid rgba(15,23,42,0.04);
+  text-decoration:none; color:var(--primary); font-weight:600;
+}
+.quick-action-btn .k { width:28px; height:28px; border-radius:8px; background:var(--primary); color:white; display:inline-flex; align-items:center; justify-content:center }
+.quick-action-btn:hover { transform:translateY(-3px); box-shadow:0 14px 30px rgba(17,24,39,0.09) }
+
+/* Login background accent */
+.login { background: linear-gradient(135deg, rgba(79,70,229,0.08), rgba(124,58,237,0.04)); }
+.login-box h2 { color: var(--primary); }
+
+/* Distinct run scraper button */
+.quick-action-btn[title="Run Scraper"], .quick-action-btn[aria-label="run-scraper"] {
+  background: linear-gradient(90deg, rgba(124,58,237,0.06), rgba(79,70,229,0.03));
+  border: 1px dashed rgba(124,58,237,0.12);
+  color: var(--primary);
+}
+
+.quick-action-btn[title="Run Scraper"] .k { background:linear-gradient(90deg,var(--primary),var(--accent)) }
+
+/* Responsive tweaks */
+@media (max-width: 768px){
+  .dashboard-container { grid-template-columns: repeat(1, 1fr); }
+  header#header .branding { font-size: 1rem }
+}
+
+/* Minor helper */
+.muted { color: var(--muted) }
+
+/* Keep admin default table readability */
+table { background: transparent }
+
+/* Improve search box */
+.search-box input[type="text"] { border-radius: 999px; padding: 8px 14px }
+
+/* Ensure links are visible */
+a { color: var(--accent) }

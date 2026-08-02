@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div style="max-width:480px;margin:40px auto;padding:24px;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.06)">
+  <h2>Sign in</h2>
+  <form method="post" action="{% url 'user_login' %}">
+    {% csrf_token %}
+    <div>
+      <label>Username</label>
+      <input type="text" name="username" required class="form-control" />
+    </div>
+    <div style="margin-top:8px">
+      <label>Password</label>
+      <input type="password" name="password" required class="form-control" />
+    </div>
+    <div style="margin-top:12px">
+      <button class="button" type="submit">Sign In</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

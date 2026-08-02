@@ -1,0 +1,48 @@
+{
+  "chatbot": {
+    "welcome_message": "भारत सरकार की योजनाओं में आपका स्वागत है!",
+    "greeting": "नमस्ते! मैं आपकी मदद कैसे कर सकता हूं?",
+    "no_results": "क्षमा करें, मुझे कोई मेल खाने वाली योजनाएं नहीं मिलीं।",
+    "error_message": "कुछ गलत हो गया। कृपया पुन: प्रयास करें।",
+    "help_message": "मुझसे सरकारी योजनाओं के बारे में पूछें।"
+  },
+  "schemes": {
+    "title": "सरकारी योजनाएं",
+    "search_placeholder": "योजना खोजें...",
+    "apply_now": "अभी आवेदन करें",
+    "learn_more": "और जानें",
+    "eligibility": "पात्रता",
+    "benefits": "लाभ",
+    "documents_required": "आवश्यक दस्तावेज",
+    "how_to_apply": "आवेदन कैसे करें",
+    "sector": "क्षेत्र",
+    "ministry": "मंत्रालय"
+  },
+  "sectors": {
+    "agriculture": "कृषि",
+    "health": "स्वास्थ्य",
+    "education": "शिक्षा",
+    "employment": "रोजगार",
+    "housing": "आवास",
+    "social_welfare": "सामाजिक कल्याण",
+    "rural_development": "ग्रामीण विकास",
+    "urban_development": "शहरी विकास",
+    "women_empowerment": "महिला सशक्तिकरण",
+    "youth_development": "युवा विकास"
+  },
+  "ui": {
+    "home": "मुख्य पृष्ठ",
+    "search": "खोजें",
+    "language": "भाषा",
+    "help": "सहायता",
+    "about": "के बारे में",
+    "contact": "संपर्क करें",
+    "loading": "लोड हो रहा है...",
+    "submit": "जमा करें",
+    "cancel": "रद्द करें",
+    "back": "वापस",
+    "next": "अगला",
+    "previous": "पिछला",
+    "close": "बंद करें"
+  }
+}

@@ -1,0 +1,14 @@
+{% extends "admin/login.html" %}
+{% load static %}
+
+{% block content %}
+  <div class="login" style="min-height:60vh;display:flex;align-items:center;justify-content:center;">
+    <div class="login-box" style="padding:28px;max-width:420px;width:100%;background:white;">
+      <div style="display:flex;align-items:center;margin-bottom:16px;">
+        <img src="/static/admin/img/logo.svg" class="admin-logo" alt="Logo">
+        <h2 style="margin:0 0 0 8px">Govt Voice Chatbot</h2>
+      </div>
+      {{ block.super }}
+    </div>
+  </div>
+{% endblock %}

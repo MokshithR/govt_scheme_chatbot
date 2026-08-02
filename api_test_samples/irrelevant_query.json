@@ -1,0 +1,26 @@
+{
+  "query": "quantum computing research grants for nanotechnology startups"
+}
+
+// EXPECTED OUTPUT (NO MATCHES - FALLBACK TRIGGERED):
+// {
+//   "answer": "I couldn't find any relevant government schemes matching your query. Could you please rephrase your question or provide more details about what type of assistance you're looking for?",
+//   "ssml": "<speak>I couldn't find any relevant government schemes matching your query. <break time=\"300ms\"/> Could you please rephrase your question or provide more details?</speak>",
+//   "schemes_used": []
+// }
+
+// WHAT TO CHECK:
+// 1. schemes_used is EMPTY (no good matches)
+// 2. Response is NO_RESULTS_MESSAGE from prompts.py
+// 3. No hallucinated schemes invented
+// 4. Gemini was NOT called (fallback before RAG)
+// 5. Distance threshold (0.55) prevented poor matches
+// 6. Response time < 2 seconds (embedding + search only)
+
+// OTHER IRRELEVANT QUERIES TO TEST:
+// "best pizza restaurants", "weather forecast", "movie recommendations",
+// "cryptocurrency investment", "latest iPhone price"
+
+// EDGE CASE - SLIGHTLY RELEVANT BUT POOR MATCH:
+// "schemes for alien farmers from mars" 
+// Should still trigger fallback due to distance > 0.55

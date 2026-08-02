@@ -78,22 +78,51 @@ WSGI_APPLICATION = 'govt_voice_chatbot.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# MongoDB Configuration
+# MongoDB / Database Configuration
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# If PostgreSQL env vars are present, use Postgres; otherwise fall back to SQLite
+POSTGRES_DB = os.getenv('POSTGRES_DB')
+POSTGRES_USER = os.getenv('POSTGRES_USER')
+POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+POSTGRES_HOST = os.getenv('POSTGRES_HOST', 'localhost')
+POSTGRES_PORT = os.getenv('POSTGRES_PORT', '5432')
+
+if POSTGRES_DB and POSTGRES_USER and POSTGRES_PASSWORD:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': POSTGRES_DB,
+            'USER': POSTGRES_USER,
+            'PASSWORD': POSTGRES_PASSWORD,
+            'HOST': POSTGRES_HOST,
+            'PORT': POSTGRES_PORT,
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # MongoDB connection for direct access
 MONGODB_URI = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/')
 MONGODB_DATABASE = 'Govt_schemes'  # Keep case consistent with existing database
+
+# 🛠️ --- START OF FIX --- 🛠️
+# Load your 'GOOGLE_API_KEY' from .env and assign it to the 'GEMINI_API_KEY'
+# setting that 'gemini_utils.py' is looking for.
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
+# Use model that works with current API - leave empty for auto-detection
+GEMINI_MODEL = os.getenv('GEMINI_MODEL', '')
+# GCP Model selection for smart answer API (flash or pro)
+GCP_MODEL = os.getenv('GCP_MODEL', 'gemini-1.5-flash')
+# 🛠️ --- END OF FIX --- 🛠️
 
 
 # Password validation
@@ -148,6 +177,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Additional locations of static files
 STATICFILES_DIRS = [
     BASE_DIR / 'chatbot' / 'static',
+    BASE_DIR / 'static',  # project-level static for custom admin assets
 ]
 
 # Media files
@@ -170,7 +200,36 @@ REST_FRAMEWORK = {
     ],
 }
 
+# Redis Cache Configuration for Vector Search
+REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
+REDIS_PORT = os.getenv('REDIS_PORT', '6379')
+REDIS_DB = os.getenv('REDIS_DB', '1')  # Use DB 1 for cache (DB 0 for Celery)
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': f'redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'PARSER_CLASS': 'redis.connection.HiredisParser',
+            'SOCKET_CONNECT_TIMEOUT': 5,
+            'SOCKET_TIMEOUT': 5,
+            'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+            'CONNECTION_POOL_KWARGS': {
+                'max_connections': 50,
+                'retry_on_timeout': True,
+            },
+        },
+        'KEY_PREFIX': 'govt_chatbot',
+        'TIMEOUT': 3600,  # 1 hour default
+    }
+}
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Celery configuration (example using Redis broker). Set these in environment for production.
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', CELERY_BROKER_URL)

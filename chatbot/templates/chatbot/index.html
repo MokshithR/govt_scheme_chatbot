@@ -315,15 +315,9 @@
                 
                 <div class="language-selector">
                     <select id="languageSelect" class="form-select">
-                        <option value="en" {% if current_language == 'en' %}selected{% endif %}>English</option>
-                        <option value="hi" {% if current_language == 'hi' %}selected{% endif %}>Hindi (हिन्दी)</option>
-                        <option value="kn" {% if current_language == 'kn' %}selected{% endif %}>Kannada (ಕನ್ನಡ)</option>
-                        <option value="ta" {% if current_language == 'ta' %}selected{% endif %}>Tamil (தமிழ்)</option>
-                        <option value="te" {% if current_language == 'te' %}selected{% endif %}>Telugu (తెలుగు)</option>
-                        <option value="bn">Bengali (বাংলা)</option>
-                        <option value="gu">Gujarati (ગુજરાતી)</option>
-                        <option value="mr">Marathi (मराठी)</option>
-                        <option value="pa">Punjabi (ਪੰਜਾਬੀ)</option>
+                        <option value="en" {% if current_language == 'en' %}selected{% endif %}>🇺🇸 English</option>
+                        <option value="hi" {% if current_language == 'hi' %}selected{% endif %}>🇮🇳 Hindi (हिन्दी)</option>
+                        <option value="kn" {% if current_language == 'kn' %}selected{% endif %}>🇮🇳 Kannada (ಕನ್ನಡ)</option>
                     </select>
                 </div>
             </div>
@@ -604,8 +598,12 @@
                 if (response.success) {
                     this.addMessage('bot', response.text_response);
                     
-                    if (response.audio_response && response.audio_response.success) {
-                        this.playAudioResponse(response.audio_response.audio_data, response.audio_response.format);
+                    // Updated to match new backend response format: audio_response is now a base64 string
+                    if (response.audio_response && !response.audio_error) {
+                        const audioFormat = response.audio_format || 'mp3';
+                        this.playAudioResponseBase64(response.audio_response, audioFormat);
+                    } else if (response.audio_error) {
+                        console.warn('Audio generation error:', response.audio_error);
                     }
                     
                     if (response.schemes && response.schemes.length > 0) {
@@ -613,6 +611,51 @@
                     }
                 } else {
                     this.showError(response.error || 'An error occurred while processing your voice message.');
+                }
+            }
+            
+            playAudioResponseBase64(audioBase64, format) {
+                try {
+                    // Stop any current audio first
+                    this.stopVoice();
+                    
+                    const audioSrc = `data:audio/${format};base64,${audioBase64}`;
+                    const audio = new Audio(audioSrc);
+                    
+                    // Track current audio
+                    this.currentAudio = audio;
+                    
+                    // Show stop button while playing
+                    this.voiceBtn.style.display = 'none';
+                    this.stopBtn.style.display = 'block';
+                    this.stopBtn.classList.add('recording'); // Add visual indicator
+                    
+                    audio.play().catch(err => {
+                        console.warn('Audio autoplay blocked or failed:', err);
+                        // If autoplay fails, just show stop button so user can manually play
+                    });
+                    
+                    audio.onended = () => {
+                        this.currentAudio = null;
+                        // Hide stop button and show voice button when audio ends
+                        this.stopBtn.style.display = 'none';
+                        this.stopBtn.classList.remove('recording');
+                        this.voiceBtn.style.display = 'block';
+                    };
+                    
+                    audio.onerror = () => {
+                        console.error('Error playing audio');
+                        this.currentAudio = null;
+                        this.stopBtn.style.display = 'none';
+                        this.stopBtn.classList.remove('recording');
+                        this.voiceBtn.style.display = 'block';
+                    };
+                } catch (error) {
+                    console.error('Error playing audio:', error);
+                    this.currentAudio = null;
+                    this.stopBtn.style.display = 'none';
+                    this.stopBtn.classList.remove('recording');
+                    this.voiceBtn.style.display = 'block';
                 }
             }
             

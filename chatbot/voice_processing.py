@@ -54,16 +54,27 @@ class VoiceProcessor:
             # Check if we're on Windows and adjust model loading
             import platform
             if platform.system() == "Windows":
-                # Use smaller model for Windows compatibility
-                self.whisper_model = whisper.load_model("tiny")
+                # Use smaller model for Windows compatibility and force CPU device
+                try:
+                    self.whisper_model = whisper.load_model("tiny", device="cpu")
+                except TypeError:
+                    # Older whisper versions may not accept device kwarg
+                    self.whisper_model = whisper.load_model("tiny")
             else:
-                self.whisper_model = whisper.load_model("base")
+                try:
+                    self.whisper_model = whisper.load_model("base")
+                except Exception:
+                    # Fall back to tiny if base fails to load
+                    self.whisper_model = whisper.load_model("tiny")
             logger.info("Whisper model loaded successfully")
         except Exception as e:
             logger.error(f"Failed to load Whisper model: {e}")
             # Try to load tiny model as fallback
             try:
-                self.whisper_model = whisper.load_model("tiny")
+                try:
+                    self.whisper_model = whisper.load_model("tiny", device="cpu")
+                except TypeError:
+                    self.whisper_model = whisper.load_model("tiny")
                 logger.info("Whisper tiny model loaded as fallback")
             except Exception as e2:
                 logger.error(f"Failed to load even tiny model: {e2}")
@@ -186,14 +197,16 @@ class VoiceProcessor:
                 logger.error("Whisper model not properly initialized")
                 self._load_models()  # Try reloading the model
                 
-            # If language is not specified, detect it first
+            # IMPORTANT: Always use the language provided by user (no auto-detection)
+            # Language MUST be provided from frontend dropdown selection
             if not language:
-                language = self.detect_language(audio_file_path)
+                logger.warning("No language specified, defaulting to English")
+                language = 'en'
             
-            # Transcribe audio with better error handling
+            # Transcribe audio with FORCED language from user selection
             result = self.whisper_model.transcribe(
                 audio_file_path,
-                language=language,
+                language=language,  # Force this language, no auto-detection
                 fp16=False,  # Use fp32 for better compatibility
                 verbose=False  # Reduce output verbosity
             )
@@ -217,55 +230,6 @@ class VoiceProcessor:
             }
         except ValueError as e:
             logger.error(f"Invalid audio input: {e}")
-            return {
-                'text': '',
-                'language': language or 'en',
-                'confidence': 0.0,
-                'error': str(e)
-            }
-        except Exception as e:
-            logger.error(f"Speech to text conversion failed: {e}")
-            return {
-                'text': '',
-                'language': language or 'en',
-                'confidence': 0.0,
-                'error': str(e)
-            }
-        
-        try:
-            # Check if file exists
-            if not os.path.exists(audio_file_path):
-                logger.error(f"Audio file not found: {audio_file_path}")
-                return {
-                    'text': '',
-                    'language': 'en',
-                    'confidence': 0.0,
-                    'error': f'Audio file not found: {audio_file_path}'
-                }
-            
-            # If language is not specified, detect it first
-            if not language:
-                language = self.detect_language(audio_file_path)
-            
-            # Transcribe audio with better error handling
-            result = self.whisper_model.transcribe(
-                audio_file_path,
-                language=language,
-                fp16=False,  # Use fp32 for better compatibility
-                verbose=False  # Reduce output verbosity
-            )
-            
-            # Clean up the text
-            text = result['text'].strip() if result.get('text') else ''
-            
-            return {
-                'text': text,
-                'language': language,
-                'confidence': 0.9,  # Whisper doesn't provide confidence scores directly
-                'error': None
-            }
-        except Exception as e:
-            logger.error(f"Speech to text conversion failed: {e}")
             return {
                 'text': '',
                 'language': language or 'en',

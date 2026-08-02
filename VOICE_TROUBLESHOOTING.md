@@ -1,133 +1,119 @@
-# 🎤 Voice Input Troubleshooting Guide
 
-## 🚨 **Common Issue: "No speech detected"**
+# Voice Playback Error Troubleshooting Guide
 
-If you're getting "No speech detected" errors, here's how to fix it:
+## 🚨 Immediate Fixes
 
-### ✅ **Step 1: Check Browser Compatibility**
-- **✅ Supported**: Chrome, Edge, Safari
-- **❌ Not supported**: Firefox (limited support), Internet Explorer
-- **💡 Recommendation**: Use Google Chrome for best results
+### 1. Browser Audio Permissions
+- **Click anywhere on the page** to enable audio
+- **Allow audio permissions** when prompted
+- **Check browser settings** for microphone/audio access
 
-### ✅ **Step 2: Check Microphone Permissions**
-1. Look for a microphone icon in your browser's address bar
-2. Click it and select "Always allow" 
-3. If you don't see the icon:
-   - Go to browser Settings → Privacy & Security → Site Settings → Microphone
-   - Find localhost:8000 and set to "Allow"
-4. Refresh the page after changing permissions
+### 2. Network Connection
+- **Check internet connection** (voice needs online TTS)
+- **Try different network** if available
+- **Refresh page** with Ctrl+F5
 
-### ✅ **Step 3: Test Your Microphone**
-1. Click the **"Test Microphone"** button on the page
-2. Allow microphone access when prompted
-3. If test fails:
-   - Check if microphone is connected
-   - Try a different microphone
-   - Check Windows sound settings
+### 3. Server Issues
+- **Restart Django server**: Ctrl+C, then `python manage.py runserver`
+- **Check server console** for errors
+- **Wait for full server startup**
 
-### ✅ **Step 4: Proper Voice Input Technique**
-1. Click **"CLICK & SPEAK"**
-2. Wait for **"🔴 Recording started - speak now!"**
-3. Speak **immediately** and **clearly**
-4. Speak for **2-5 seconds** minimum
-5. Don't speak too quietly or too loudly
+## 🔧 Step-by-Step Troubleshooting
 
-### ✅ **Step 5: Environment Check**
-- **Quiet environment**: Reduce background noise
-- **Clear speech**: Speak distinctly
-- **Proper distance**: 6-12 inches from microphone
-- **No interruptions**: Don't speak over system sounds
-
-## 🔧 **Advanced Troubleshooting**
-
-### **Issue: Microphone Access Denied**
+### Step 1: Basic Checks
 ```
-❌ Microphone access denied
+1. Is the voice button green? (enabled)
+2. Can you see language selector?
+3. Is internet working?
+4. Is browser volume up?
 ```
-**Solution:**
-1. Clear browser data for localhost:8000
-2. Restart browser
-3. Visit http://localhost:8000 again
-4. Allow microphone when prompted
 
-### **Issue: Audio Capture Error**
+### Step 2: Browser Console Check
 ```
-❌ Audio capture error
+1. Press F12 (Developer Tools)
+2. Go to Console tab
+3. Look for red error messages
+4. Common errors:
+   - "Audio playback failed"
+   - "Network error"
+   - "Permission denied"
 ```
-**Solution:**
-1. Close other applications using microphone (Zoom, Teams, etc.)
-2. Restart browser
-3. Try again
 
-### **Issue: Network Error**
+### Step 3: Test Voice Endpoint
 ```
-❌ Network error
+1. Open new tab
+2. Go to: http://127.0.0.1:8000/multilingual-voice-test.html
+3. Test with different languages
+4. Check if audio plays there
 ```
-**Solution:**
-1. Check internet connection
-2. Web Speech API requires internet
-3. Try refreshing the page
 
-## 🎯 **Best Practices for Voice Input**
+## 🌐 Browser-Specific Fixes
 
-### **✅ DO:**
-- Speak clearly and at normal pace
-- Wait for "Recording started" message
-- Use simple, direct questions
-- Speak in a quiet environment
-- Allow microphone permissions
+### Chrome/Edge
+- Settings > Privacy > Microphone > Allow
+- Clear cache: Ctrl+Shift+Del
+- Disable extensions temporarily
 
-### **❌ DON'T:**
-- Speak too fast or too slow
-- Whisper or shout
-- Speak in noisy environments
-- Use complex, long sentences
-- Interrupt the recording process
+### Firefox
+- Settings > Privacy > Permissions > Microphone > Allow
+- Refresh with Ctrl+F5
+- Check about:config for media settings
 
-## 🔄 **Alternative: Use Text Input**
+### Safari
+- Settings > Websites > Microphone > Allow
+- Disable "Prevent cross-site tracking"
+- Restart browser
 
-If voice input continues to have issues:
+## 🎯 Advanced Solutions
 
-1. **Use the text input box** below the voice button
-2. **Click sample question buttons** to test functionality
-3. **Type your questions** like:
-   - "What are agriculture schemes?"
-   - "Tell me about health schemes"
-   - "How to apply for education schemes?"
+### 1. Replace with Enhanced JavaScript
+Copy the enhanced_voice_controls.js content into your home.html
 
-## 🛠️ **Technical Details**
+### 2. Add Audio Context
+```javascript
+// Add to page load
+window.addEventListener('load', function() {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    audioContext.resume();
+});
+```
 
-### **How Voice Input Works:**
-1. **Web Speech API** (browser-based speech recognition)
-2. **Real-time processing** (no server upload needed)
-3. **Multi-language support** (9 Indian languages)
-4. **Instant results** (no waiting for processing)
+### 3. Test with Simple Audio
+```javascript
+// Test basic audio
+const testAudio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+testAudio.play();
+```
 
-### **System Requirements:**
-- **Browser**: Chrome 25+, Edge 79+, Safari 14.1+
-- **Internet**: Required for Web Speech API
-- **Microphone**: Any working microphone
-- **Permissions**: Microphone access allowed
+## 📞 Support Commands
 
-## 📞 **Still Having Issues?**
+### Test Voice Directly
+```bash
+curl -X POST http://127.0.0.1:8000/multilingual-voice/ \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Hello test","language":"en","speed":"normal"}'
+```
 
-If voice input still doesn't work after trying all steps:
+### Check Server Status
+```bash
+python manage.py runserver --debug
+```
 
-1. **Use text input** - it has the same functionality
-2. **Try a different browser** (preferably Chrome)
-3. **Check Windows microphone settings**
-4. **Test microphone in other applications**
-5. **Restart your computer** if all else fails
+## 🎉 Expected Working State
 
-## ✅ **Success Indicators**
+When voice is working:
+- ✅ Voice button is green
+- ✅ Language selector visible
+- ✅ Console shows no errors
+- ✅ Audio plays when bot responds
+- ✅ Voice plays in selected language
+- ✅ Speed control works
 
-You'll know voice input is working when you see:
-- ✅ "🔴 Recording started - speak now!"
-- ✅ "Hearing: [your speech in real-time]"
-- ✅ "You said: [final recognized text]"
-- ✅ "Confidence: [percentage]%"
-- ✅ Bot response with scheme information
+## 🔄 Final Resort
 
----
-
-**💡 Remember**: The text input works exactly the same as voice input, so you can always use that as a reliable alternative!
+If nothing works:
+1. **Clear all browser data**
+2. **Try different browser**
+3. **Check system audio drivers**
+4. **Restart computer**
+5. **Reinstall voice dependencies**

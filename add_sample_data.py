@@ -1,180 +1,179 @@
+"""
+Script to initialize or add sample government schemes data directly to MongoDB.
+"""
+import pymongo
+from datetime import datetime, date
+import logging
 import os
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'govt_voice_chatbot.settings')
-import django
-django.setup()
-from chatbot.models import GovernmentScheme
-from datetime import date
 
-# Additional sample data for comprehensive testing
-additional_schemes = [
-    # Agriculture Schemes
+# Set up a basic logger
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+# --- MongoDB Connection Details (from mongodb_adapter.py) ---
+MONGO_URI = 'mongodb://localhost:27017/'
+DATABASE_NAME = 'govt_schemes'
+COLLECTION_NAME = 'government_schemes'
+
+def get_mongo_collection():
+    """Establishes MongoDB connection and returns the schemes collection."""
+    try:
+        client = pymongo.MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+        client.server_info() # Test connection
+        db = client[DATABASE_NAME]
+        collection = db[COLLECTION_NAME]
+        logger.info(f"Successfully connected to MongoDB database '{DATABASE_NAME}'.")
+        return collection
+    except pymongo.errors.ServerSelectionTimeoutError as err:
+        logger.error(f"Failed to connect to MongoDB at {MONGO_URI}.")
+        logger.error("Please ensure the 'mongod' server is running in a separate terminal.")
+        return None
+
+# --- Sample Data (Matches the MongoDB Schema) ---
+# This data includes the fields your chatbot logic actually searches for.
+sample_schemes = [
     {
-        'title': 'Pradhan Mantri Fasal Bima Yojana (PMFBY)',
-        'description': 'PMFBY is a crop insurance scheme that provides comprehensive insurance coverage against crop failure, helping to stabilize the income of farmers and encourage them to adopt innovative and modern agricultural practices.',
-        'short_description': 'Crop insurance scheme for farmers',
-        'sector': 'agriculture',
+        'title': 'Pradhan Mantri Kisan Samman Nidhi (PM-KISAN)',
+        'description': 'PM-KISAN is a Central Sector Scheme with 100% funding from Government of India. Under the scheme, income support of Rs.6000/- per year is provided to all farmer families across the country in three equal installments of Rs.2000/- each every four months.',
+        'short_description': 'Income support of Rs.6000/- per year to all farmer families',
+        'sector': 'Agriculture', # Matches the mapped name in mongodb_adapter
         'ministry': 'Ministry of Agriculture and Farmers Welfare',
         'department': 'Department of Agriculture, Cooperation and Farmers Welfare',
         'government_level': 'central',
-        'state': None,
-        'eligibility_criteria': 'All farmers growing notified crops in notified areas',
-        'benefits': 'Premium subsidy up to 90% for small and marginal farmers',
+        'eligibility_criteria': 'All landholding farmer families with cultivable land in their names',
+        'benefits': 'Rs.6000/- per year in three equal installments of Rs.2000/- each',
         'application_process': 'Registration through Common Service Centres (CSC) or online portal',
-        'application_link': None,
-        'launch_date': '2016-02-18',
-        'last_date': None,
-        'helpline_number': '1800-180-1551',
-        'email': 'support@pmfby.gov.in',
-        'website': 'https://pmfby.gov.in/',
-        'source_url': 'https://pmfby.gov.in/',
-        'keywords': ['crop insurance', 'agriculture', 'farmers', 'pmfby', 'fasal bima'],
-        'search_tags': ['agriculture', 'central', 'crop insurance', 'farmers'],
+        'launch_date': datetime(2019, 2, 1),
         'language': 'en',
+        'keywords': ['farmer', 'agriculture', 'income support', 'pm-kisan'],
+        'search_tags': ['agriculture', 'central', 'farmer welfare'],
+        'source_url': 'https://pmkisan.gov.in/',
         'is_active': True
     },
-    
-    # Health Schemes
     {
-        'title': 'Pradhan Mantri Matru Vandana Yojana (PMMVY)',
-        'description': 'PMMVY is a maternity benefit program that provides financial assistance to pregnant and lactating mothers for their first living child.',
-        'short_description': 'Maternity benefit program for pregnant women',
-        'sector': 'health',
+        'title': 'Ayushman Bharat Pradhan Mantri Jan Arogya Yojana (AB-PMJAY)',
+        'description': 'AB-PMJAY is the largest health assurance scheme in the world which aims at providing a health cover of Rs. 5 lakhs per family per year for secondary and tertiary care hospitalization to over 10.74 crores poor and vulnerable families.',
+        'short_description': 'Health cover of Rs. 5 lakhs per family per year for hospitalization',
+        'sector': 'Health', # Matches the mapped name
+        'ministry': 'Ministry of Health and Family Welfare',
+        'department': 'Department of Health and Family Welfare',
+        'government_level': 'central',
+        'eligibility_criteria': 'Families identified as per SECC database, having deprivation criteria',
+        'benefits': 'Health cover of Rs. 5 lakhs per family per year for secondary and tertiary care hospitalization',
+        'application_process': 'Eligible families can avail services at empaneled hospitals',
+        'launch_date': datetime(2018, 9, 23),
+        'language': 'en',
+        'keywords': ['health', 'medical', 'hospitalization', 'ayushman bharat'],
+        'search_tags': ['health', 'central', 'medical insurance'],
+        'source_url': 'https://pmjay.gov.in/',
+        'is_active': True
+    },
+    {
+        'title': 'Pradhan Mantri Jan Dhan Yojana (PMJDY)',
+        'description': 'PMJDY is a National Mission for Financial Inclusion to ensure access to financial services, namely, Banking/ Savings & Deposit Accounts, Remittance, Credit, Insurance, Pension in an affordable manner.',
+        'short_description': 'Financial inclusion mission to provide banking services to all',
+        'sector': 'Social Welfare', # Matches the mapped name
+        'ministry': 'Ministry of Finance',
+        'department': 'Department of Financial Services',
+        'government_level': 'central',
+        'eligibility_criteria': 'All unbanked households in the country',
+        'benefits': 'Zero balance savings account, RuPay debit card, accident insurance cover of Rs.1 lakh',
+        'application_process': 'Visit any bank branch or Business Correspondent outlet',
+        'launch_date': datetime(2014, 8, 28),
+        'language': 'en',
+        'keywords': ['banking', 'financial inclusion', 'jan dhan', 'savings account'],
+        'search_tags': ['social welfare', 'central', 'banking'],
+        'source_url': 'https://pmjdy.gov.in/',
+        'is_active': True
+    },
+    {
+        'title': 'Pradhan Mantri Mudra Yojana (PMMY)',
+        'description': 'PMMY is a scheme launched by the Hon\'ble Prime Minister on April 8, 2015 for providing loans up to 10 lakh to the non-corporate, non-farm small/micro enterprises.',
+        'short_description': 'Loans up to 10 lakh for small/micro enterprises',
+        'sector': 'Employment and Skill Development', # Matches the mapped name
+        'ministry': 'Ministry of Finance',
+        'department': 'Department of Financial Services',
+        'government_level': 'central',
+        'eligibility_criteria': 'Non-corporate, non-farm small/micro enterprises',
+        'benefits': 'Loans up to Rs.10 lakh under three categories: Shishu (up to Rs.50,000), Kishore (Rs.50,000 to Rs.5 lakh), Tarun (Rs.5 lakh to Rs.10 lakh)',
+        'application_process': 'Apply through any of the lending institutions like Banks, NBFCs, MFIs',
+        'launch_date': datetime(2015, 4, 8),
+        'language': 'en',
+        'keywords': ['loan', 'mudra', 'small business', 'micro enterprise'],
+        'search_tags': ['employment', 'central', 'loan'],
+        'source_url': 'https://mudra.org.in/',
+        'is_active': True
+    },
+    {
+        'title': 'Beti Bachao Beti Padhao Scheme',
+        'description': 'Aims to address the declining Child Sex Ratio (CSR) and related issues of women empowerment over a life-cycle continuum.',
+        'short_description': 'Aims to address the declining Child Sex Ratio (CSR).',
+        'sector': 'Women and Child Development', # Matches the mapped name
         'ministry': 'Ministry of Women and Child Development',
-        'department': 'Department of Women and Child Development',
+        'department': 'Ministry of Women and Child Development',
         'government_level': 'central',
-        'state': None,
-        'eligibility_criteria': 'Pregnant and lactating mothers above 19 years of age',
-        'benefits': 'Rs.5000/- in three installments',
-        'application_process': 'Registration at Anganwadi Centres or online',
-        'application_link': None,
-        'launch_date': '2017-01-01',
-        'last_date': None,
-        'helpline_number': '1800-180-1104',
-        'email': 'support@wcd.nic.in',
-        'website': 'https://wcd.nic.in/',
-        'source_url': 'https://wcd.nic.in/',
-        'keywords': ['maternity', 'health', 'women', 'pregnancy', 'pmvvy'],
-        'search_tags': ['health', 'central', 'maternity', 'women welfare'],
+        'eligibility_criteria': 'Targets districts with low Child Sex Ratio.',
+        'benefits': 'Awareness campaigns, improvement in girl child education, and welfare services.',
+        'application_process': 'This is a social campaign; benefits are delivered through various service points like schools and health centers.',
+        'launch_date': datetime(2015, 1, 22),
         'language': 'en',
-        'is_active': True
-    },
-    
-    # Employment Schemes
-    {
-        'title': 'Pradhan Mantri Kaushal Vikas Yojana (PMKVY)',
-        'description': 'PMKVY is a skill development initiative that aims to train over 10 million youth in various skills to make them employable.',
-        'short_description': 'Skill development program for youth',
-        'sector': 'employment',
-        'ministry': 'Ministry of Skill Development and Entrepreneurship',
-        'department': 'Department of Skill Development and Entrepreneurship',
-        'government_level': 'central',
-        'state': None,
-        'eligibility_criteria': 'Indian citizens aged 15-45 years',
-        'benefits': 'Free training and certification with placement assistance',
-        'application_process': 'Registration through training centers or online portal',
-        'application_link': None,
-        'launch_date': '2015-07-15',
-        'last_date': None,
-        'helpline_number': '1800-123-9626',
-        'email': 'support@pmkvy.gov.in',
-        'website': 'https://pmkvy.gov.in/',
-        'source_url': 'https://pmkvy.gov.in/',
-        'keywords': ['skill development', 'employment', 'training', 'pmkvy', 'youth'],
-        'search_tags': ['employment', 'central', 'skill development', 'youth'],
-        'language': 'en',
-        'is_active': True
-    },
-    
-    # Education Schemes
-    {
-        'title': 'Pradhan Mantri Poshan Shakti Nirman (PM POSHAN)',
-        'description': 'PM POSHAN is a centrally sponsored scheme that provides hot cooked meals to children studying in classes I to VIII in government and government-aided schools.',
-        'short_description': 'Mid-day meal program for school children',
-        'sector': 'education',
-        'ministry': 'Ministry of Education',
-        'department': 'Department of School Education and Literacy',
-        'government_level': 'central',
-        'state': None,
-        'eligibility_criteria': 'Children studying in classes I to VIII in government schools',
-        'benefits': 'Hot cooked meals with nutritional value',
-        'application_process': 'Automatic enrollment in government schools',
-        'application_link': None,
-        'launch_date': '2021-09-29',
-        'last_date': None,
-        'helpline_number': '1800-180-5522',
-        'email': 'support@education.gov.in',
-        'website': 'https://education.gov.in/',
-        'source_url': 'https://education.gov.in/',
-        'keywords': ['education', 'mid-day meal', 'school', 'nutrition', 'children'],
-        'search_tags': ['education', 'central', 'mid-day meal', 'school nutrition'],
-        'language': 'en',
-        'is_active': True
-    },
-    
-    # Social Welfare Schemes
-    {
-        'title': 'Pradhan Mantri Ujjwala Yojana (PMUY)',
-        'description': 'PMUY is a scheme to provide LPG connections to women from below poverty line (BPL) households.',
-        'short_description': 'LPG connection scheme for BPL women',
-        'sector': 'social_welfare',
-        'ministry': 'Ministry of Petroleum and Natural Gas',
-        'department': 'Department of Petroleum and Natural Gas',
-        'government_level': 'central',
-        'state': None,
-        'eligibility_criteria': 'Women from BPL households',
-        'benefits': 'Free LPG connection with first refill',
-        'application_process': 'Application through LPG distributors',
-        'application_link': None,
-        'launch_date': '2016-05-01',
-        'last_date': None,
-        'helpline_number': '1800-266-6696',
-        'email': 'support@petroleum.nic.in',
-        'website': 'https://petroleum.nic.in/',
-        'source_url': 'https://petroleum.nic.in/',
-        'keywords': ['lpg', 'social welfare', 'women', 'bpl', 'ujjwala'],
-        'search_tags': ['social welfare', 'central', 'lpg', 'women welfare'],
-        'language': 'en',
-        'is_active': True
-    },
-    
-    # Urban Development Schemes
-    {
-        'title': 'Smart Cities Mission',
-        'description': 'Smart Cities Mission is an urban renewal and retrofitting program to develop 100 cities across the country making them citizen friendly and sustainable.',
-        'short_description': 'Urban development program for smart cities',
-        'sector': 'urban_development',
-        'ministry': 'Ministry of Housing and Urban Affairs',
-        'department': 'Department of Housing and Urban Affairs',
-        'government_level': 'central',
-        'state': None,
-        'eligibility_criteria': 'Cities selected through competition',
-        'benefits': 'Infrastructure development and smart solutions',
-        'application_process': 'City selection through competition',
-        'application_link': None,
-        'launch_date': '2015-06-25',
-        'last_date': None,
-        'helpline_number': '1800-180-5522',
-        'email': 'support@smartcities.gov.in',
-        'website': 'https://smartcities.gov.in/',
-        'source_url': 'https://smartcities.gov.in/',
-        'keywords': ['smart cities', 'urban development', 'infrastructure', 'sustainable'],
-        'search_tags': ['urban development', 'central', 'smart cities', 'infrastructure'],
-        'language': 'en',
+        'keywords': ['girl child', 'women', 'empowerment', 'beti bachao'],
+        'search_tags': ['women', 'child', 'central', 'education'],
+        'source_url': 'https://wcd.nic.in/bbbp-schemes',
         'is_active': True
     }
 ]
 
-# Add the schemes to database
-print("Adding additional sample schemes...")
-for scheme_data in additional_schemes:
-    scheme, created = GovernmentScheme.objects.get_or_create(
-        title=scheme_data['title'],
-        defaults=scheme_data
-    )
-    if created:
-        print(f"[+] Added: {scheme.title}")
-    else:
-        print(f"[!] Already exists: {scheme.title}")
+def load_data():
+    """Loads the sample schemes into the MongoDB collection."""
+    
+    collection = get_mongo_collection()
+    if collection is None:
+        logger.error("Data loading aborted. MongoDB connection failed.")
+        return
 
-print(f"\nTotal schemes in database: {GovernmentScheme.objects.count()}")
-print("Sample data addition completed!")
+    logger.info(f"Adding/Updating {len(sample_schemes)} schemes in '{COLLECTION_NAME}' collection...")
+    
+    created_count = 0
+    updated_count = 0
+    
+    for scheme_data in sample_schemes:
+        try:
+            # Use update_one with upsert=True to create if not exist, or update if it does
+            result = collection.update_one(
+                {'title': scheme_data['title']},  # Filter to find existing document
+                {'$set': scheme_data},             # Data to insert or update
+                upsert=True                        # Create if it doesn't exist
+            )
+            
+            if result.upserted_id:
+                created_count += 1
+                logger.info(f"  Created: {scheme_data['title']}")
+            elif result.matched_count > 0:
+                updated_count += 1
+                logger.info(f"  Updated: {scheme_data['title']}")
+                
+        except Exception as e:
+            logger.error(f"Error processing {scheme_data['title']}: {e}")
+
+    logger.info(
+        f"\nSuccessfully processed {len(sample_schemes)} schemes. "
+        f"Created: {created_count}, Updated: {updated_count}"
+    )
+    
+    # Display summary
+    total_schemes = collection.count_documents({})
+    logger.info(f"Total schemes in MongoDB: {total_schemes}")
+    logger.info("Data loading complete.")
+
+
+if __name__ == "__main__":
+    # Ensure Django environment is set up (in case models are imported elsewhere)
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'govt_voice_chatbot.settings')
+    try:
+        import django
+        django.setup()
+    except ImportError:
+        logger.warning("Could not set up Django (this is OK if script is standalone).")
+    
+    load_data()

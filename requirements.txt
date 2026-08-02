@@ -19,3 +19,14 @@ whitenoise
 SpeechRecognition
 pyaudio
 ffmpeg-python
+fuzzywuzzy
+python-Levenshtein
+rapidfuzz>=3.0.0
+google-generativeai
+kaggle
+psycopg2-binary
+pgvector
+sentence-transformers>=2.2.0
+redis
+django-redis
+langdetect

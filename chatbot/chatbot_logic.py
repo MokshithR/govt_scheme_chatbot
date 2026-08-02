@@ -10,6 +10,14 @@ from datetime import datetime
 from .models import GovernmentScheme, ChatSession, ChatMessage
 from .voice_processing import voice_processor
 import json
+from .gemini_utils import generate_text_with_gemini
+
+try:
+    from fuzzywuzzy import fuzz
+    FUZZY_AVAILABLE = True
+except ImportError:
+    FUZZY_AVAILABLE = False
+    logging.warning("fuzzywuzzy not installed. Install with: pip install fuzzywuzzy python-Levenshtein")
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +29,132 @@ class GovernmentChatbot:
         self.language = 'en'
         self.session_id = None
         self.session = None
+        self._scheme_names_cache = None
+        self._cache_timestamp = None
+    
+    def _get_scheme_names(self) -> List[str]:
+        """Get cached list of all scheme titles from DB for fuzzy matching"""
+        from datetime import datetime, timedelta
+        
+        # Cache for 5 minutes
+        if self._scheme_names_cache and self._cache_timestamp:
+            if datetime.now() - self._cache_timestamp < timedelta(minutes=5):
+                return self._scheme_names_cache
+        
+        try:
+            scheme_titles = list(GovernmentScheme.objects.filter(is_active=True).values_list('title', flat=True))
+            self._scheme_names_cache = scheme_titles
+            self._cache_timestamp = datetime.now()
+            return scheme_titles
+        except Exception as e:
+            logger.warning(f"Failed to fetch scheme names from DB: {e}")
+            # Fallback to common scheme names
+            return [
+                "Pradhan Mantri Awas Yojana",
+                "PM Kisan",
+                "Ayushman Bharat",
+                "Ujjwala Yojana",
+                "PMMVY",
+                "Pradhan Mantri Matru Vandana Yojana",
+                "Pradhan Mantri Kisan Samman Nidhi",
+                "PM Jan Dhan Yojana",
+                "Sukanya Samriddhi Yojana",
+                "Atal Pension Yojana",
+            ]
+    
+    def correct_spelling(self, user_text: str) -> Tuple[str, Optional[str]]:
+        """Correct spelling using fuzzy matching against known scheme names.
+        
+        Returns:
+            Tuple of (corrected_text, matched_scheme_name or None)
+        """
+        if not FUZZY_AVAILABLE:
+            return user_text, None
+        
+        schemes = self._get_scheme_names()
+        if not schemes:
+            return user_text, None
+        
+        best_match = None
+        highest_score = 0
+        
+        for scheme in schemes:
+            score = fuzz.ratio(user_text.lower(), scheme.lower())
+            if score > highest_score:
+                highest_score = score
+                best_match = scheme
+        
+        # If we have a strong match (70%+), suggest it
+        if highest_score >= 70 and best_match:
+            logger.info(f"Fuzzy match: '{user_text}' -> '{best_match}' (score: {highest_score})")
+            return best_match, best_match
+        
+        # Also check partial matches in the query (for multi-word queries)
+        words = user_text.split()
+        if len(words) > 2:
+            for scheme in schemes:
+                # Check if any significant part of the scheme name appears with typos
+                scheme_words = scheme.split()
+                for sw in scheme_words:
+                    if len(sw) > 3:  # Only match meaningful words
+                        for uw in words:
+                            if len(uw) > 3:
+                                score = fuzz.ratio(uw.lower(), sw.lower())
+                                if score >= 75:
+                                    logger.info(f"Partial fuzzy match: '{user_text}' contains '{uw}' ~ '{sw}' from '{scheme}'")
+                                    return user_text, scheme  # Keep original query but note the match
+        
+        return user_text, None
+    
+    def translate_response(self, text: str, target_language: str) -> str:
+        """Translate response text to target language using Gemini AI.
+        
+        Args:
+            text: The English text to translate
+            target_language: Target language code ('hi' for Hindi, 'kn' for Kannada)
+        
+        Returns:
+            Translated text (or original if translation fails)
+        """
+        if target_language == 'en' or not text:
+            return text
+        
+        language_names = {
+            'hi': 'Hindi',
+            'kn': 'Kannada',
+            'ta': 'Tamil',
+            'te': 'Telugu',
+            'mr': 'Marathi',
+            'bn': 'Bengali',
+            'gu': 'Gujarati',
+            'ml': 'Malayalam',
+            'pa': 'Punjabi'
+        }
+        
+        target_lang_name = language_names.get(target_language, target_language)
+        
+        try:
+            prompt = f"""Translate the following government scheme information from English to {target_lang_name}.
+Preserve scheme names, numbers, and links as-is.
+Make the translation natural and easy to understand for native speakers.
+Return PLAIN TEXT only. Do NOT use markdown: no headings, no bullets, no asterisks, no '#' symbols,
+no bold/italic formatting. Respond in clean sentences and short paragraphs only.
+
+English text:
+{text}
+
+{target_lang_name} translation (plain text, no markdown):"""
+
+            translated = generate_text_with_gemini(prompt)
+            if translated and len(translated.strip()) > 10:
+                logger.info(f"Successfully translated response to {target_lang_name}")
+                return translated.strip()
+            else:
+                logger.warning(f"Translation to {target_lang_name} returned empty result")
+                return text
+        except Exception as e:
+            logger.error(f"Translation to {target_lang_name} failed: {e}")
+            return text
     
     def set_language(self, language: str):
         """Set the language for responses"""
@@ -49,27 +183,67 @@ class GovernmentChatbot:
         try:
             self.set_language(language)
             
-            # Log user message
+            # Store original query for response generation
+            original_query = query
+            
+            # If query is in Kannada or Hindi, translate to English for DB search
+            # Database schemes are in English, so we need English for accurate search
+            search_query = query
+            if language != 'en':
+                try:
+                    lang_names = {'kn': 'Kannada', 'hi': 'Hindi'}
+                    lang_full = lang_names.get(language, language)
+                    translation_prompt = (
+                        f"Translate the following {lang_full} text to English. "
+                        f"Return ONLY the English translation, no explanations.\n\n"
+                        f"Text to translate: {query}"
+                    )
+                    search_query = generate_text_with_gemini(translation_prompt).strip()
+                    logger.info(f"Translated query from {language} to English: {query} → {search_query}")
+                except Exception as e:
+                    logger.warning(f"Query translation failed: {e}, using original query")
+                    search_query = query
+            
+            # Apply fuzzy spell correction (on English search query)
+            corrected_query, matched_scheme = self.correct_spelling(search_query)
+            did_correct = corrected_query != search_query
+            
+            # Log user message (original query in user's language)
             if self.session:
                 ChatMessage.objects.create(
                     session=self.session,
                     message_type='user',
-                    text_content=query,
+                    text_content=original_query,
                     language=language
                 )
             
+            # Use corrected English query for DB processing
+            working_query = corrected_query
+            
             # Analyze query intent
-            intent = self._analyze_intent(query)
+            intent = self._analyze_intent(working_query)
             
             # Extract keywords and entities
-            keywords = self._extract_keywords(query)
-            entities = self._extract_entities(query)
+            keywords = self._extract_keywords(working_query)
+            entities = self._extract_entities(working_query)
             
-            # Search for relevant schemes
-            relevant_schemes = self._search_schemes(query, keywords, entities, intent)
+            # If we found a fuzzy match, add it to keywords for better search
+            if matched_scheme:
+                keywords.insert(0, matched_scheme)
             
-            # Generate response
-            response = self._generate_response(query, relevant_schemes, intent, language)
+            # Search for relevant schemes (using English query for DB)
+            relevant_schemes = self._search_schemes(working_query, keywords, entities, intent)
+            
+            # Generate response (using original query to preserve user's language context)
+            response = self._generate_response(original_query, relevant_schemes, intent, language)
+            
+            # No need to translate - Gemini generates response in target language directly
+            
+            # If we corrected spelling, prepend a note in the user's language
+            if did_correct and matched_scheme:
+                correction_msg = f"Did you mean '{matched_scheme}'?" if language == 'en' else f"क्या आपका मतलब '{matched_scheme}' था?" if language == 'hi' else f"'{matched_scheme}' ಎಂದು ನೀವು ಹೇಳುತ್ತಿದ್ದೀರಾ?"
+                correction_note = correction_msg + "\n\n"
+                response['text'] = correction_note + response['text']
             
             # Log bot response
             if self.session:
@@ -82,13 +256,19 @@ class GovernmentChatbot:
                     confidence_score=response.get('confidence', 0.8)
                 )
             
+            # For sector searches or general queries, return more schemes (up to 25)
+            # For specific queries (like single scheme lookup), return fewer (5)
+            max_schemes = 25 if (intent in ['sector_specific', 'search_scheme', 'general_query'] or entities.get('sectors')) else 5
+            
             return {
                 'success': True,
                 'response': response,
-                'schemes': [self._format_scheme(scheme) for scheme in relevant_schemes[:5]],
+                'schemes': [self._format_scheme(scheme) for scheme in relevant_schemes[:max_schemes]],
                 'intent': intent,
                 'keywords': keywords,
-                'language': language
+                'language': language,
+                'spelling_corrected': did_correct,
+                'matched_scheme': matched_scheme
             }
             
         except Exception as e:
@@ -151,14 +331,20 @@ class GovernmentChatbot:
                     query_result['language']
                 )
                 audio_response = voice_result.get('audio_data') if voice_result.get('success') else None
+                audio_format = voice_result.get('format')
+                audio_error = voice_result.get('error')
             except Exception as e:
                 logger.warning(f"Voice response generation failed: {e}")
                 audio_response = None
+                audio_format = None
+                audio_error = str(e)
             
             return {
                 'success': True,
                 'text_response': query_result['response']['text'],
                 'audio_response': audio_response,
+                'audio_format': audio_format,
+                'audio_error': audio_error,
                 'language': query_result['language'],
                 'schemes': query_result['schemes'],
                 'confidence': query_result['response'].get('confidence', 0.8),
@@ -385,54 +571,359 @@ class GovernmentChatbot:
         return entities
     
     def _search_schemes(self, query: str, keywords: List[str], entities: Dict, intent: str) -> List[Dict]:
-        """Search for relevant schemes based on query using MongoDB"""
+        """Search for relevant schemes: try PostgreSQL (Django ORM) first, then MongoDB, then fallback.
+
+        Note: PostgreSQL search is the primary source and is now more inclusive:
+        - We OR together matches on individual words instead of AND-ing filters per word.
+        - We fetch up to 50 recent schemes before any higher-level limit is applied.
+        """
+        # 1) Try PostgreSQL via Django ORM
         try:
-            # Import MongoDB adapter
+            qs = GovernmentScheme.objects.filter(is_active=True)
+
+            # Sector filter (ForeignKey -> filter by related name) - case-insensitive
+            if entities.get('sectors'):
+                from django.db.models import Q
+                sector_q = Q()
+                for sector in entities['sectors']:
+                    sector_q |= Q(sector__name__icontains=sector)
+                qs = qs.filter(sector_q)
+
+            # Intent-specific filters
+            if intent == 'eligibility':
+                qs = qs.exclude(eligibility_criteria__isnull=True).exclude(eligibility_criteria='')
+            elif intent == 'application':
+                qs = qs.exclude(application_process__isnull=True).exclude(application_process='')
+            elif intent == 'benefits':
+                qs = qs.exclude(benefits__isnull=True).exclude(benefits='')
+
+            # Flexible keyword search
+            # Skip keyword filtering if we already have sector filters and reasonable results
+            # This prevents over-filtering on sector queries like "farmer schemes" or "agriculture"
+            from django.db.models import Q
+            skip_keyword_filter = False
+            if entities.get('sectors') and qs.count() >= 5:
+                # If sector filter already gives us good results, don't narrow further with keywords
+                skip_keyword_filter = True
+            
+            if not skip_keyword_filter:
+                if keywords:
+                    q_obj = Q()
+                    for kw in keywords[:10]:
+                        q_obj |= (
+                            Q(title__icontains=kw) |
+                            Q(description__icontains=kw) |
+                            Q(short_description__icontains=kw) |
+                            Q(benefits__icontains=kw) |
+                            Q(eligibility_criteria__icontains=kw) |
+                            Q(sector__name__icontains=kw) |
+                            Q(keywords__contains=[kw]) |
+                            Q(search_tags__contains=[kw])
+                        )
+                    if q_obj:
+                        qs = qs.filter(q_obj)
+                else:
+                    # Use words from full query; OR all word matches instead of AND-ing filters
+                    words = re.findall(r"\b\w+\b", query.lower())[:10]
+                    if words:
+                        q_obj = Q()
+                        for word in words:
+                            q_obj |= (
+                                Q(title__icontains=word) |
+                                Q(description__icontains=word) |
+                                Q(short_description__icontains=word)
+                                | Q(keywords__contains=[word])
+                                | Q(search_tags__contains=[word])
+                            )
+                        qs = qs.filter(q_obj)
+
+            # Fetch up to 50 most recently updated schemes from PostgreSQL.
+            qs = qs.order_by('-last_updated')[:50]
+
+            def _model_to_doc(s):
+                return {
+                    '_id': f'sql:{s.pk}',
+                    'title': s.title or '',
+                    'description': s.description or '',
+                    'short_description': s.short_description or (s.description or '')[:200],
+                    'sector': (s.sector.name if s.sector_id else ''),
+                    'ministry': s.ministry or '',
+                    'department': s.department or '',
+                    'government_level': s.government_level or '',
+                    'state': s.state or '',
+                    'eligibility_criteria': s.eligibility_criteria or '',
+                    'benefits': s.benefits or '',
+                    'application_process': s.application_process or '',
+                    'application_link': s.application_link or '',
+                    'launch_date': str(s.launch_date) if s.launch_date else '',
+                    'last_date': str(s.last_date) if s.last_date else '',
+                    'helpline_number': s.helpline_number or '',
+                    'email': s.email or '',
+                    'website': s.website or '',
+                    'source_url': s.source_url or '',
+                    'keywords': s.keywords or [],
+                    'search_tags': s.search_tags or [],
+                    'language': s.language or 'en',
+                    'is_active': bool(s.is_active),
+                }
+
+            orm_results = [_model_to_doc(s) for s in qs]
+            if orm_results:
+                logger.info(f"Found {len(orm_results)} schemes via PostgreSQL for query: {query}")
+                return orm_results
+        except Exception as e:
+            logger.warning(f"PostgreSQL search failed or not configured: {e}")
+
+        # 2) Fallback to MongoDB adapter if available
+        try:
             import sys
             import os
             sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
             from mongodb_adapter import MongoDBAdapter
-            
-            # Use MongoDB adapter
             adapter = MongoDBAdapter()
             schemes = adapter.search_schemes(query, keywords, entities, intent)
-            
-            return schemes
-            
+            if schemes:
+                logger.info(f"Found {len(schemes)} schemes via MongoDB for query: {query}")
+                return schemes
         except Exception as e:
-            logger.error(f"Error searching schemes: {e}")
-            return []
+            logger.warning(f"MongoDB search failed: {e}")
+
+        # 3) Final fallback
+        return self._get_fallback_schemes(keywords)
+    
+    def _get_fallback_schemes(self, keywords: List[str]) -> List[Dict]:
+        """Provide fallback schemes when MongoDB is not available"""
+        fallback_schemes = [
+            {
+                'title': 'Pradhan Mantri Kisan Samman Nidhi (PM-KISAN)',
+                'description': 'Income support scheme for farmers providing ₹6,000 per year',
+                'short_description': '₹6,000 annual income support for farmers',
+                'sector': 'agriculture',
+                'ministry': 'Ministry of Agriculture and Farmers Welfare',
+                'government_level': 'central',
+                'eligibility_criteria': 'All landholding farmer families',
+                'benefits': '₹6,000 per year in three installments',
+                'website': 'https://pmkisan.gov.in/',
+                'keywords': ['agriculture', 'farmers', 'income support'],
+                'is_active': True
+            },
+            {
+                'title': 'Ayushman Bharat - PM Jan Arogya Yojana',
+                'description': 'Health insurance scheme providing ₹5 lakh coverage per family',
+                'short_description': '₹5 lakh health insurance coverage',
+                'sector': 'health',
+                'ministry': 'Ministry of Health and Family Welfare',
+                'government_level': 'central',
+                'eligibility_criteria': 'Vulnerable families as per SECC-2011',
+                'benefits': 'Health insurance up to ₹5 lakh per family per year',
+                'website': 'https://pmjay.gov.in/',
+                'keywords': ['health', 'insurance', 'medical'],
+                'is_active': True
+            }
+        ]
+        
+        # Filter schemes based on keywords
+        if keywords:
+            filtered_schemes = []
+            for scheme in fallback_schemes:
+                for keyword in keywords:
+                    if (keyword.lower() in scheme['sector'].lower() or 
+                        keyword.lower() in scheme['title'].lower() or
+                        any(k.lower() in keyword.lower() for k in scheme['keywords'])):
+                        filtered_schemes.append(scheme)
+                        break
+            return filtered_schemes
+        
+        return fallback_schemes
     
     def _generate_response(self, query: str, schemes: List[GovernmentScheme], intent: str, language: str) -> Dict:
         """Generate response based on query and found schemes"""
         try:
             if not schemes:
-                return {
-                    'text': self._get_no_results_response(intent, language),
-                    'confidence': 0.5,
-                    'intent': intent,
-                    'scheme_count': 0
-                }
-            
-            # Generate response based on intent
+                # If no schemes found, use Gemini to craft a helpful reply that is explicit
+                # about the limitation of the local database and does NOT invent schemes.
+                base = self._get_no_results_response(intent, language)
+                try:
+                    # Map language code to full name for clarity
+                    lang_names = {'en': 'English', 'kn': 'Kannada', 'hi': 'Hindi'}
+                    lang_full = lang_names.get(language, 'English')
+                    
+                    prompt = (
+                        f"Respond ONLY in {lang_full}. Do not translate to other languages.\n\n"
+                        f"User query: {query}\n\n"
+                        "Context: The system searched its INTERNAL government schemes database "
+                        "(PostgreSQL/MongoDB) and did not find any matching scheme for this query.\n\n"
+                        "Instruction: Talk to the user in a friendly way and:\n"
+                        "1) Clearly state that no matching scheme was found in this internal database.\n"
+                        "2) Do NOT guess or invent new scheme names or details.\n"
+                        "3) Suggest helpful next steps like rephrasing the query, mentioning the sector, "
+                        "   or providing more details.\n"
+                        "4) Keep the answer concise (3-5 sentences).\n"
+                        "5) Return PLAIN TEXT only: no markdown, no headings, no bullets, no asterisks, "
+                        "no '#' symbols, no bold/italic formatting, no pipes '|', no dashes '-'.\n"
+                        f"6) Your entire response must be in {lang_full} language only."
+                    )
+                    ai_reply = generate_text_with_gemini(prompt)
+                    if ai_reply and ai_reply.strip():
+                        return {'text': ai_reply.strip(), 'confidence': 0.6, 'intent': intent, 'scheme_count': 0}
+                except Exception:
+                    pass
+
+                return {'text': base, 'confidence': 0.5, 'intent': intent, 'scheme_count': 0}
+
+            # For specific intents, generate structured response
             if intent == 'greeting':
-                response_text = self._get_greeting_response(language)
+                base_response = self._get_greeting_response(language)
+                return {'text': base_response, 'confidence': 0.9, 'intent': intent, 'scheme_count': 0}
             elif intent == 'help':
-                response_text = self._get_help_response(language)
-            elif intent == 'get_info':
-                response_text = self._get_info_response(schemes, language)
+                base_response = self._get_help_response(language)
+                return {'text': base_response, 'confidence': 0.9, 'intent': intent, 'scheme_count': 0}
+
+            # For scheme queries, use Gemini to create structured, detailed responses
+            try:
+                # Prepare comprehensive scheme context
+                scheme_details = []
+                for s in schemes[:3]:  # Top 3 most relevant
+                    if isinstance(s, dict):
+                        details = {
+                            'title': s.get('title', ''),
+                            'description': s.get('description', ''),
+                            'short_description': s.get('short_description', ''),
+                            'sector': s.get('sector', ''),
+                            'eligibility': s.get('eligibility_criteria', ''),
+                            'benefits': s.get('benefits', ''),
+                            'documents': s.get('required_documents', []) if isinstance(s.get('required_documents'), list) else [],
+                            'application': s.get('application_process', ''),
+                            'application_link': s.get('application_link', ''),
+                            'website': s.get('website', ''),
+                            'helpline': s.get('helpline_number', ''),
+                            'ministry': s.get('ministry', ''),
+                        }
+                    else:
+                        details = {
+                            'title': getattr(s, 'title', ''),
+                            'description': getattr(s, 'description', ''),
+                            'short_description': getattr(s, 'short_description', ''),
+                            'sector': getattr(s.sector, 'name', '') if s.sector else '',
+                            'eligibility': getattr(s, 'eligibility_criteria', ''),
+                            'benefits': getattr(s, 'benefits', ''),
+                            'documents': getattr(s, 'required_documents', []) if isinstance(getattr(s, 'required_documents', []), list) else [],
+                            'application': getattr(s, 'application_process', ''),
+                            'application_link': getattr(s, 'application_link', ''),
+                            'website': getattr(s, 'website', ''),
+                            'helpline': getattr(s, 'helpline_number', ''),
+                            'ministry': getattr(s, 'ministry', ''),
+                        }
+                    scheme_details.append(details)
+
+                # Build detailed context for Gemini
+                context_parts = []
+                for i, d in enumerate(scheme_details, 1):
+                    ctx = f"""
+Scheme {i}:
+- Name: {d['title']}
+- Sector: {d['sector']}
+- Ministry: {d['ministry']}
+- Description: {d['short_description'] or d['description'][:200]}
+- Eligibility: {d['eligibility'][:300] if d['eligibility'] else 'Not specified'}
+- Benefits: {d['benefits'][:300] if d['benefits'] else 'Not specified'}
+- Documents: {', '.join(d['documents'][:5]) if d['documents'] else 'Check official site'}
+- How to Apply: {d['application'][:200] if d['application'] else 'Visit official website'}
+- Website: {d['website'] or d['application_link'] or 'Not available'}
+- Helpline: {d['helpline'] or 'Not available'}
+"""
+                    context_parts.append(ctx.strip())
+
+                scheme_context = "\n\n".join(context_parts)
+
+                # Map language code to full name for Gemini clarity
+                lang_names = {'en': 'English', 'kn': 'Kannada', 'hi': 'Hindi'}
+                lang_full = lang_names.get(language, 'English')
+
+                # Create intent-specific prompt with language forcing
+                if intent == 'get_info':
+                    instruction = (
+                        f"Provide comprehensive information about the scheme(s) ONLY in {lang_full}. "
+                        "Include: Name, Sector, Description, Key Benefits, and Website link."
+                    )
+                elif intent == 'eligibility':
+                    instruction = (
+                        f"Explain who is eligible for the scheme(s) ONLY in {lang_full}. "
+                        "List eligibility criteria clearly."
+                    )
+                elif intent == 'application':
+                    instruction = (
+                        f"Explain how to apply for the scheme(s) ONLY in {lang_full}. "
+                        "Include: Step-by-step process, required documents, application link/website, and helpline if available."
+                    )
+                elif intent == 'benefits':
+                    instruction = (
+                        f"Explain the benefits provided by the scheme(s) ONLY in {lang_full}. "
+                        "Include financial assistance amounts, services provided, and other advantages."
+                    )
+                else:
+                    instruction = (
+                        f"Provide a complete overview of the scheme(s) ONLY in {lang_full} covering: "
+                        "Name, Eligibility, Benefits, Required Documents, How to Apply, and Website/Contact."
+                    )
+
+                prompt = (
+                    f"Respond ONLY in {lang_full}. Do not translate to other languages. Your entire response must be in {lang_full}.\n\n"
+                    f"You are a government scheme information assistant. Answer user queries clearly and concisely.\n\n"
+                    "IMPORTANT GROUNDING RULES:\n"
+                    "- You ONLY know about the schemes listed under 'Available Scheme Information'.\n"
+                    "- Do NOT introduce or guess any other scheme names (central or state) that are not in this list.\n"
+                    "- Preserve scheme titles exactly as given in the list (you may adjust only minor casing).\n"
+                    "- If the user query mentions a slightly different name (e.g. 'SSP scholarship'), "
+                    "  map it to the closest title from the list, but always show the actual stored title.\n"
+                    "- Do NOT change 'SSP scholarship' into an unrelated scheme like 'SC/ST Pre-matric Scholarship' "
+                    "  unless that exact scheme is present in the provided list.\n"
+                    "- If some field (benefits, eligibility, dates, etc.) is missing or empty in the context, "
+                    "  say that the information is not available in this database instead of inventing details.\n\n"
+                    "OUTPUT FORMAT RULES (CRITICAL FOR TTS):\n"
+                    "- Return PLAIN TEXT only. Do NOT use any markdown formatting.\n"
+                    "- No headings (no lines starting with '#', '##', or '###').\n"
+                    "- No bullets or lists using '-', '*', '•' or numbers with dots.\n"
+                    "- No bold/italic markers like **text** or *text*.\n"
+                    "- No pipe symbols '|', no dashes at line starts.\n"
+                    "- Use clean sentences only. Separate schemes with blank lines.\n"
+                    f"- Your entire response must be in {lang_full} language.\n\n"
+                    f"User Query: {query}\n"
+                    f"Intent: {intent}\n\n"
+                    f"Available Scheme Information:\n{scheme_context}\n\n"
+                    f"Instruction: {instruction}\n\n"
+                    "Format your response with simple paragraphs. "
+                    "Keep it concise (3-5 sentences per scheme). "
+                    "If multiple schemes match, separate them clearly with blank lines. "
+                    "Always include the website/application link if available."
+                )
+
+                ai_text = generate_text_with_gemini(prompt)
+                if ai_text and ai_text.strip():
+                    return {
+                        'text': ai_text.strip(),
+                        'confidence': 0.85,
+                        'intent': intent,
+                        'scheme_count': len(schemes)
+                    }
+            except Exception as e:
+                logger.warning(f"Gemini response generation failed: {e}")
+
+            # Fallback to structured base responses if Gemini fails
+            if intent == 'get_info':
+                base_response = self._get_info_response(schemes, language)
             elif intent == 'eligibility':
-                response_text = self._get_eligibility_response(schemes, language)
+                base_response = self._get_eligibility_response(schemes, language)
             elif intent == 'application':
-                response_text = self._get_application_response(schemes, language)
+                base_response = self._get_application_response(schemes, language)
             elif intent == 'benefits':
-                response_text = self._get_benefits_response(schemes, language)
+                base_response = self._get_benefits_response(schemes, language)
             else:
-                response_text = self._get_general_response(schemes, query, language)
-            
+                base_response = self._get_general_response(schemes, query, language)
+
             return {
-                'text': response_text,
-                'confidence': 0.8,
+                'text': base_response,
+                'confidence': 0.75,
                 'intent': intent,
                 'scheme_count': len(schemes)
             }
@@ -465,22 +956,41 @@ class GovernmentChatbot:
         return responses.get(language, responses['en'])
     
     def _get_info_response(self, schemes: List[Dict], language: str) -> str:
-        """Get information response"""
+        """Get information response with complete scheme details"""
         if not schemes:
             return self._get_no_results_response('get_info', language)
         
-        scheme = schemes[0]
-        response = f"Here's information about {scheme['title']}:\n\n"
-        response += f"Description: {scheme['short_description']}\n\n"
+        scheme = schemes[0] if isinstance(schemes[0], dict) else schemes[0]
         
-        if scheme.get('ministry'):
-            response += f"Ministry: {scheme['ministry']}\n"
-        if scheme.get('department'):
-            response += f"Department: {scheme['department']}\n"
-        if scheme.get('eligibility_criteria'):
-            response += f"Eligibility: {scheme['eligibility_criteria'][:200]}...\n"
+        if isinstance(scheme, dict):
+            title = scheme.get('title', '')
+            desc = scheme.get('short_description', '') or scheme.get('description', '')[:200]
+            sector = scheme.get('sector', '')
+            ministry = scheme.get('ministry', '')
+            eligibility = scheme.get('eligibility_criteria', '')[:200]
+            benefits = scheme.get('benefits', '')[:200]
+            link = scheme.get('website', '') or scheme.get('application_link', '') or scheme.get('source_url', '')
+        else:
+            title = getattr(scheme, 'title', '')
+            desc = getattr(scheme, 'short_description', '') or getattr(scheme, 'description', '')[:200]
+            sector = getattr(scheme.sector, 'name', '') if scheme.sector else ''
+            ministry = getattr(scheme, 'ministry', '')
+            eligibility = getattr(scheme, 'eligibility_criteria', '')[:200]
+            benefits = getattr(scheme, 'benefits', '')[:200]
+            link = getattr(scheme, 'website', '') or getattr(scheme, 'application_link', '') or getattr(scheme, 'source_url', '')
         
-        response += f"\nFor more details, visit: {scheme.get('source_url', 'N/A')}"
+        response = f"**{title}**\n\n"
+        response += f"📋 **Description:** {desc}\n\n"
+        if sector:
+            response += f"🏢 **Sector:** {sector}\n"
+        if ministry:
+            response += f"🏛️ **Ministry:** {ministry}\n\n"
+        if eligibility:
+            response += f"✅ **Eligibility:** {eligibility}...\n\n"
+        if benefits:
+            response += f"💰 **Benefits:** {benefits}...\n\n"
+        if link:
+            response += f"🔗 **More info:** {link}"
         
         return response
     
@@ -489,28 +999,47 @@ class GovernmentChatbot:
         if not schemes:
             return self._get_no_results_response('eligibility', language)
         
-        response = "Here are the eligibility criteria for relevant schemes:\n\n"
+        response = "**Eligibility Criteria:**\n\n"
         
         for i, scheme in enumerate(schemes[:3], 1):
-            response += f"{i}. {scheme['title']}\n"
-            if scheme.get('eligibility_criteria'):
-                response += f"   Eligibility: {scheme['eligibility_criteria'][:300]}...\n\n"
+            if isinstance(scheme, dict):
+                title = scheme.get('title', '')
+                eligibility = scheme.get('eligibility_criteria', 'Not specified')
+            else:
+                title = getattr(scheme, 'title', '')
+                eligibility = getattr(scheme, 'eligibility_criteria', 'Not specified')
+            
+            response += f"{i}. **{title}**\n"
+            response += f"   {eligibility[:250]}...\n\n"
         
         return response
     
     def _get_application_response(self, schemes: List[Dict], language: str) -> str:
-        """Get application process response"""
+        """Get application process response with documents and links"""
         if not schemes:
             return self._get_no_results_response('application', language)
         
-        response = "Here's how to apply for relevant schemes:\n\n"
+        response = "**How to Apply:**\n\n"
         
         for i, scheme in enumerate(schemes[:3], 1):
-            response += f"{i}. {scheme['title']}\n"
-            if scheme.get('application_process'):
-                response += f"   Process: {scheme['application_process'][:300]}...\n"
-            if scheme.get('application_link'):
-                response += f"   Apply online: {scheme['application_link']}\n\n"
+            if isinstance(scheme, dict):
+                title = scheme.get('title', '')
+                app_process = scheme.get('application_process', '')
+                docs = scheme.get('required_documents', [])
+                link = scheme.get('application_link', '') or scheme.get('website', '')
+            else:
+                title = getattr(scheme, 'title', '')
+                app_process = getattr(scheme, 'application_process', '')
+                docs = getattr(scheme, 'required_documents', [])
+                link = getattr(scheme, 'application_link', '') or getattr(scheme, 'website', '')
+            
+            response += f"{i}. **{title}**\n"
+            if app_process:
+                response += f"   📝 **Process:** {app_process[:200]}...\n"
+            if docs and isinstance(docs, list):
+                response += f"   📄 **Documents:** {', '.join(docs[:5])}\n"
+            if link:
+                response += f"   🔗 **Apply:** {link}\n\n"
         
         return response
     
@@ -519,29 +1048,53 @@ class GovernmentChatbot:
         if not schemes:
             return self._get_no_results_response('benefits', language)
         
-        response = "Here are the benefits of relevant schemes:\n\n"
+        response = "**Benefits Provided:**\n\n"
         
         for i, scheme in enumerate(schemes[:3], 1):
-            response += f"{i}. {scheme['title']}\n"
-            if scheme.get('benefits'):
-                response += f"   Benefits: {scheme['benefits'][:300]}...\n\n"
+            if isinstance(scheme, dict):
+                title = scheme.get('title', '')
+                benefits = scheme.get('benefits', 'Not specified')
+            else:
+                title = getattr(scheme, 'title', '')
+                benefits = getattr(scheme, 'benefits', 'Not specified')
+            
+            response += f"{i}. **{title}**\n"
+            response += f"   💰 {benefits[:250]}...\n\n"
         
         return response
     
     def _get_general_response(self, schemes: List[Dict], query: str, language: str) -> str:
-        """Get general response"""
+        """Get general response with comprehensive scheme overview"""
         if not schemes:
             return self._get_no_results_response('general_query', language)
         
-        response = f"I found {len(schemes)} relevant scheme(s) for your query:\n\n"
+        response = f"Found **{len(schemes)} scheme(s)**:\n\n"
         
-        for i, scheme in enumerate(schemes[:5], 1):
-            response += f"{i}. {scheme['title']}\n"
-            response += f"   Sector: {scheme['sector'].title()}\n"
-            response += f"   Description: {scheme['short_description'][:200]}...\n"
-            if scheme.get('ministry'):
-                response += f"   Ministry: {scheme['ministry']}\n"
-            response += f"   More info: {scheme.get('source_url', 'N/A')}\n\n"
+        # Show up to 15 schemes for sector/category searches
+        for i, scheme in enumerate(schemes[:15], 1):
+            if isinstance(scheme, dict):
+                title = scheme.get('title', '')
+                sector = scheme.get('sector', '')
+                desc = scheme.get('short_description', '')[:150]
+                benefits = scheme.get('benefits', '')[:100]
+                link = scheme.get('website', '') or scheme.get('source_url', '')
+            else:
+                title = getattr(scheme, 'title', '')
+                sector = getattr(scheme.sector, 'name', '') if scheme.sector else ''
+                desc = getattr(scheme, 'short_description', '')[:150]
+                benefits = getattr(scheme, 'benefits', '')[:100]
+                link = getattr(scheme, 'website', '') or getattr(scheme, 'source_url', '')
+            
+            response += f"{i}. **{title}**\n"
+            if sector:
+                response += f"   🏢 {sector}\n"
+            if desc:
+                response += f"   📋 {desc}\n"
+            if benefits:
+                response += f"   💰 {benefits}\n"
+            if link:
+                response += f"   🔗 {link}\n"
+            response += "\n"
         
         return response
     

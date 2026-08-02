@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multilingual Voice Test - Government Chatbot</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; cursor: pointer; }
+        button:hover { background: #007bff; color: white; }
+        select { padding: 8px; margin: 5px; font-size: 14px; }
+        #result { margin-top: 20px; padding: 10px; border: 1px solid #ddd; }
+        .success { color: green; }
+        .error { color: red; }
+        .lang-flag { font-size: 20px; margin-right: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🌍 Multilingual Voice Test - Government Chatbot</h1>
+    
+    <div class="test-section">
+        <h3>Voice Controls</h3>
+        <label>Language:</label>
+        <select id="languageSelect">
+            <option value="en">🇺🇸 English</option>
+            <option value="hi">🇮🇳 हिन्दी</option>
+            <option value="kn">🇮🇳 ಕನ್ನಡ</option>
+            <option value="ta">🇮🇳 தமிழ்</option>
+            <option value="te">🇮🇳 తెలుగు</option>
+            <option value="mr">🇮🇳 मराठी</option>
+            <option value="bn">🇮🇳 বাংলা</option>
+            <option value="gu">🇮🇳 ગુજરાતી</option>
+        </select>
+        
+        <label>Speed:</label>
+        <select id="speedSelect">
+            <option value="slow">🐌 Slow</option>
+            <option value="normal" selected>🚶 Normal</option>
+            <option value="fast">🏃 Fast</option>
+        </select>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test Messages</h3>
+        <button onclick="testWelcome()">Test Welcome Message</button>
+        <button onclick="testScheme()">Test Scheme Information</button>
+        <button onclick="testEligibility()">Test Eligibility Criteria</button>
+        <button onclick="testApplication()">Test Application Process</button>
+        <button onclick="testCustom()">Test Custom Message</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Custom Message</h3>
+        <input type="text" id="customText" placeholder="Enter custom text..." style="width: 300px; padding: 8px;">
+        <button onclick="testCustomText()">Speak Custom Text</button>
+    </div>
+    
+    <div id="result"></div>
+    
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        function speakText(text) {
+            const language = document.getElementById('languageSelect').value;
+            const speed = document.getElementById('speedSelect').value;
+            
+            document.getElementById('result').innerHTML = '<div class="success">🔊 Generating voice...</div>';
+            
+            fetch('/multilingual-voice/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    'text': text,
+                    'language': language,
+                    'speed': speed
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const audio = new Audio('data:audio/mp3;base64,' + data.audio_data);
+                    audio.play();
+                    document.getElementById('result').innerHTML = 
+                        `<div class="success">✅ Playing in ${data.language_display} | Speed: ${data.speed} | Size: ${data.audio_size} bytes</div>`;
+                } else {
+                    document.getElementById('result').innerHTML = `<div class="error">❌ Voice failed: ${data.error}</div>`;
+                }
+            })
+            .catch(error => {
+                document.getElementById('result').innerHTML = `<div class="error">❌ Error: ${error}</div>`;
+            });
+        }
+        
+        function testWelcome() {
+            const messages = {
+                'en': 'Welcome to the Government Voice Chatbot! How can I help you today?',
+                'hi': 'सरकारी वॉइस चैटबॉट में आपका स्वागत है! मैं आज आपकी क्या सहायता कर सकता हूं?',
+                'kn': 'ಸರ್ಕಾರಿ ಧ್ವನಿ ಚಾಟ್‌ಬಾಟ್‌ಗೆ ಸ್ವಾಗತ! ನಾನು ಇಂದು ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಬಹುದು?',
+                'ta': 'அரசு குரல் அரட்டைக்கு வரவேற்கிறோம்! நான் இன்று உங்களுக்கு எப்படி உதவ முடியும்?',
+                'te': 'ప్రభుత్వ వాయిస్ చాట్‌బాట్‌కి స్వాగతం! నేను ఈరోజు మీకు ఎలా సహాయం చేయగలను?'
+            };
+            
+            const language = document.getElementById('languageSelect').value;
+            const text = messages[language] || messages['en'];
+            speakText(text);
+        }
+        
+        function testScheme() {
+            const messages = {
+                'en': 'I found the Digital Skills for Youth Program 2024. This program offers free training in programming and digital marketing.',
+                'hi': 'मैंने डिजिटल स्किल्स फॉर यूथ प्रोग्राम 2024 खोजा। यह प्रोग्राम प्रोग्रामिंग और डिजिटल मार्केटिंग में मुफ्त प्रशिक्षण प्रदान करता है।',
+                'kn': 'ನಾನು ಡಿಜಿಟಲ್ ಸ್ಕಿಲ್ಸ್ ಫಾರ್ ಯೂತ್ ಪ್ರೋಗ್ರಾಂ 2024 ಅನ್ನು ಕಂಡುಹಿಡಿದಿದ್ದೇನೆ. ಈ ಪ್ರೋಗ್ರಾಂ ಪ್ರೋಗ್ರಾಮಿಂಗ್ ಮತ್ತು ಡಿಜಿಟಲ್ ಮಾರ್ಕೆಟಿಂಗ್‌ನಲ್ಲಿ ಉಚಿತ ತರಬೇತಿಯನ್ನು ನೀಡುತ್ತದೆ.'
+            };
+            
+            const language = document.getElementById('languageSelect').value;
+            const text = messages[language] || messages['en'];
+            speakText(text);
+        }
+        
+        function testEligibility() {
+            const messages = {
+                'en': 'Eligibility: Age 18-35 years, minimum 10th pass, annual family income less than 3 lakh rupees.',
+                'hi': 'पात्रता: आयु 18-35 वर्ष, न्यूनतम 10वीं पास, वार्षिक पारिवारिक आय 3 लाख रुपये से कम।',
+                'kn': 'ಅರ್ಹತೆ: ವಯಸ್ಸು 18-35 ವರ್ಷ, ಕನಿಷ್ಠ 10ನೇ ತರಗತಿ ಪಾಸ್, ವಾರ್ಷಿಕ ಕುಟುಂಬದ ಆದಾಯ 3 ಲಕ್ಷ ರೂಪಾಯಿಗಳಿಗಿಂತ ಕಡಿಮೆ.'
+            };
+            
+            const language = document.getElementById('languageSelect').value;
+            const text = messages[language] || messages['en'];
+            speakText(text);
+        }
+        
+        function testApplication() {
+            const messages = {
+                'en': 'Application process: Visit the official website, register with your details, upload required documents, and submit the form.',
+                'hi': 'आवेदन प्रक्रिया: आधिकारिक वेबसाइट पर जाएं, अपना विवरण दर्ज करें, आवश्यक दस्तावेज़ अपलोड करें, और फॉर्म जमा करें।',
+                'kn': 'ಅರ್ಜಿ ಪ್ರಕ್ರಿಯೆ: ಅಧಿಕೃತ ವೆಬ್‌ಸೈಟ್‌ಗೆ ಭೇಟಿ ನೀಡಿ, ನಿಮ್ಮ ವಿವರಗಳೊಂದಿಗೆ ನೋಂದಾಯಿಸಿ, ಅಗತ್ಯ ದಾಖಲೆಗಳನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಿ, ಮತ್ತು ಫಾರ್ಮ್ ಅನ್ನು ಸಲ್ಲಿಸಿ.'
+            };
+            
+            const language = document.getElementById('languageSelect').value;
+            const text = messages[language] || messages['en'];
+            speakText(text);
+        }
+        
+        function testCustom() {
+            speakText('This is a custom test message in multiple languages for the government voice chatbot system.');
+        }
+        
+        function testCustomText() {
+            const text = document.getElementById('customText').value;
+            if (text.trim()) {
+                speakText(text);
+            } else {
+                alert('Please enter some text to speak');
+            }
+        }
+    </script>
+</body>
+</html>

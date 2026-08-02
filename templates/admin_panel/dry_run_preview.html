@@ -1,0 +1,27 @@
+{% extends 'admin/base_site.html' %}
+{% load static %}
+
+{% block content %}
+  <div class="container" style="padding:20px">
+    <h2>Dry Run Preview</h2>
+    <p class="muted">This preview shows parsed schemes without saving to the database.</p>
+
+    <div style="margin:12px 0">
+      <a href="/admin/" class="button">Back to Admin</a>
+    </div>
+
+    {% if schemes %}
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;">
+        {% for s in schemes %}
+          <div class="dashboard-card">
+            <h3>{{ s.title }}</h3>
+            <p class="muted">{{ s.short_description|default:s.description|truncatechars:200 }}</p>
+            <p><strong>Source:</strong> {{ s.source_portal }} <br><strong>URL:</strong> <a href="{{ s.source_url }}" target="_blank">Open</a></p>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>No parsed schemes found.</p>
+    {% endif %}
+  </div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{
+  "query": "What loan schemes are available for small farmers?"
+}
+
+// EXPECTED OUTPUT:
+// {
+//   "answer": "Based on government schemes, small farmers can access the following loan options:\n\n1. Kisan Credit Card (KCC): Provides credit for crop cultivation and other agricultural needs at subsidized interest rates. Farmers can apply through their local bank or cooperative society.\n\n2. PM-KISAN: While not a loan, this scheme provides direct income support of ₹6,000 per year in three installments to all landholding farmers.\n\n3. Agricultural Term Loans: Available through banks for purchasing tractors, irrigation equipment, and other farm machinery.\n\nTo apply, visit your nearest bank branch with land ownership documents, Aadhaar card, and bank account details.",
+//   "ssml": "<speak>Based on government schemes, small farmers can access the following loan options...</speak>",
+//   "schemes_used": [
+//     "Kisan Credit Card",
+//     "PM-KISAN",
+//     "Agricultural Infrastructure Fund"
+//   ]
+// }
+
+// WHAT TO CHECK:
+// 1. Answer is factual and based on actual schemes
+// 2. schemes_used array has 1-3 relevant schemes
+// 3. SSML wrapper is present
+// 4. No hallucinated scheme names
+// 5. Response time < 5 seconds (uncached)

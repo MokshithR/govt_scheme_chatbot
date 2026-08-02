@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Voice Test - Government Chatbot</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px; font-size: 16px; cursor: pointer; }
+        button:hover { background: #007bff; color: white; }
+        #result { margin-top: 20px; padding: 10px; border: 1px solid #ddd; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Voice Output Test - Government Chatbot</h1>
+    
+    <button onclick="testVoice()">Test Voice Output</button>
+    <button onclick="testScheme()">Test Scheme Response</button>
+    <button onclick="testKannada()">Test Kannada Language</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        function testVoice() {
+            const text = "Hello! Welcome to the Government Voice Chatbot. I can now speak to you!";
+            
+            fetch('/voice-text-to-speech/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    'text': text,
+                    'language': 'en'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const audio = new Audio('data:audio/mp3;base64,' + data.audio_data);
+                    audio.play();
+                    document.getElementById('result').innerHTML = '<div class="success">Voice playing... ' + text + '</div>';
+                } else {
+                    document.getElementById('result').innerHTML = '<div class="error">Voice failed: ' + data.error + '</div>';
+                }
+            })
+            .catch(error => {
+                document.getElementById('result').innerHTML = '<div class="error">Error: ' + error + '</div>';
+            });
+        }
+        
+        function testScheme() {
+            const text = "I found the Digital Skills for Youth Program 2024. This program offers free training in programming and digital marketing with monthly stipend and placement assistance.";
+            
+            fetch('/voice-text-to-speech/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    'text': text,
+                    'language': 'en'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const audio = new Audio('data:audio/mp3;base64,' + data.audio_data);
+                    audio.play();
+                    document.getElementById('result').innerHTML = '<div class="success">Scheme voice playing... ' + text.substring(0, 50) + '...</div>';
+                } else {
+                    document.getElementById('result').innerHTML = '<div class="error">Voice failed: ' + data.error + '</div>';
+                }
+            });
+        }
+        
+        function testKannada() {
+            const text = "ನಮಸ್ಕಾರ! ಸರ್ಕಾರಿ ಧ್ವನಿ ಚಾಟ್‌ಬಾಟ್‌ಗೆ ಸ್ವಾಗತ. ನಾನು ಈಗ ನಿಮಗೆ ಮಾತನಾಡಬಹುದು.";
+            
+            fetch('/voice-text-to-speech/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    'text': text,
+                    'language': 'kn'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const audio = new Audio('data:audio/mp3;base64,' + data.audio_data);
+                    audio.play();
+                    document.getElementById('result').innerHTML = '<div class="success">Kannada voice playing... ' + text + '</div>';
+                } else {
+                    document.getElementById('result').innerHTML = '<div class="error">Voice failed: ' + data.error + '</div>';
+                }
+            });
+        }
+        
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

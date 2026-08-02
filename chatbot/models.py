@@ -1,6 +1,20 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 import json
+
+# 🛠️ FIX: ADD THE MISSING SECTOR MODEL
+class Sector(models.Model):
+    """Model for storing scheme sectors"""
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'sector'  # Match your existing PostgreSQL table
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
 
 
 class GovernmentScheme(models.Model):
@@ -36,10 +50,12 @@ class GovernmentScheme(models.Model):
     # Basic Information
     title = models.CharField(max_length=500, help_text="Scheme title")
     description = models.TextField(help_text="Detailed description of the scheme")
-    short_description = models.TextField(max_length=1000, help_text="Brief description")
+    # 🛠️ FIX: Removed 'max_length=1000' which is invalid for a TextField
+    short_description = models.TextField(help_text="Brief description", blank=True, null=True, default='')
     
     # Categorization
-    sector = models.CharField(max_length=50, choices=SECTOR_CHOICES, help_text="Primary sector")
+    # 🛠️ FIX: Use the 'Sector' model defined above
+    sector = models.ForeignKey(Sector, on_delete=models.SET_NULL, null=True, blank=True)
     sub_sectors = models.JSONField(default=list, help_text="Additional sectors this scheme covers")
     
     # Government Information
@@ -76,9 +92,21 @@ class GovernmentScheme(models.Model):
     language = models.CharField(max_length=10, choices=LANGUAGE_CHOICES, default='en')
     title_translations = models.JSONField(default=dict, help_text="Translations of title in different languages")
     description_translations = models.JSONField(default=dict, help_text="Translations of description")
+    short_description_translations = models.JSONField(default=dict, blank=True, help_text="Translations of short description")
+    benefits_translations = models.JSONField(default=dict, blank=True, help_text="Translations of benefits")
+    eligibility_criteria_translations = models.JSONField(default=dict, blank=True, help_text="Translations of eligibility criteria")
+    application_process_translations = models.JSONField(default=dict, blank=True, help_text="Translations of application process")
+    financial_assistance_translations = models.JSONField(default=dict, blank=True, help_text="Translations of financial assistance")
     
     # Metadata
+    origin = models.CharField(max_length=64, default='bulk-import', help_text="Origin/source of this scheme record (e.g., 'web-scrape', 'bulk-import', 'manual-entry')")
     source_url = models.URLField(help_text="Source URL where this information was scraped from")
+    data_source = models.CharField(
+        max_length=20,
+        default='manual',
+        choices=(('manual', 'Manual'), ('scraped', 'Scraped')),
+        help_text="Whether this scheme was manually added or scraped from a website"
+    )
     last_updated = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True, help_text="Whether the scheme is currently active")
@@ -88,7 +116,7 @@ class GovernmentScheme(models.Model):
     search_tags = models.JSONField(default=list, help_text="Tags for better search and categorization")
     
     class Meta:
-        db_table = 'schemes'
+        db_table = 'scheme'
         indexes = [
             models.Index(fields=['sector']),
             models.Index(fields=['government_level']),
@@ -98,7 +126,91 @@ class GovernmentScheme(models.Model):
         ]
     
     def __str__(self):
-        return f"{self.title} - {self.sector}"
+        # 🛠️ FIX: Access the 'name' property of the sector object
+        return f"{self.title} - {self.sector.name if self.sector else 'N/A'}"
+
+    def get_title(self, lang: str = 'en') -> str:
+        """Return translated title for given language code, falling back to stored title.
+
+        - `lang` should be an ISO code like 'en', 'hi', 'kn' or with region 'en-US'.
+        - The method tries exact match, then base-language match, then case-insensitive startswith.
+        """
+        if not lang:
+            lang = 'en'
+        title_map = self.title_translations or {}
+        # direct lookup
+        if lang in title_map and title_map[lang]:
+            return title_map[lang]
+        # try base language (en-US -> en)
+        if '-' in lang:
+            base = lang.split('-')[0]
+            if base in title_map and title_map[base]:
+                return title_map[base]
+        # case-insensitive fallback
+        for k, v in title_map.items():
+            if not k:
+                continue
+            if k.lower() == lang.lower() or k.split('-')[0].lower() == lang.split('-')[0].lower():
+                return v
+        return self.title or ''
+
+    def get_description(self, lang: str = 'en') -> str:
+        """Return translated description for given language code, falling back to stored description."""
+        if not lang:
+            lang = 'en'
+        desc_map = self.description_translations or {}
+        if lang in desc_map and desc_map[lang]:
+            return desc_map[lang]
+        if '-' in lang:
+            base = lang.split('-')[0]
+            if base in desc_map and desc_map[base]:
+                return desc_map[base]
+        for k, v in desc_map.items():
+            if not k:
+                continue
+            if k.lower() == lang.lower() or k.split('-')[0].lower() == lang.split('-')[0].lower():
+                return v
+        return self.description or ''
+
+    def get_field_translation(self, field_name: str, lang: str = 'en') -> str:
+        """Generic helper to get translation for any text field.
+        
+        Args:
+            field_name: Name of the field (e.g., 'benefits', 'eligibility_criteria')
+            lang: Language code (e.g., 'en', 'hi', 'kn')
+        
+        Returns:
+            Translated text if available, otherwise original English text
+        """
+        if not lang or lang == 'en':
+            return getattr(self, field_name, '') or ''
+        
+        # Check if there's a corresponding _translations field
+        translations_field = f"{field_name}_translations"
+        if not hasattr(self, translations_field):
+            return getattr(self, field_name, '') or ''
+        
+        trans_map = getattr(self, translations_field) or {}
+        
+        # Direct match
+        if lang in trans_map and trans_map[lang]:
+            return trans_map[lang]
+        
+        # Base language fallback (en-US -> en)
+        if '-' in lang:
+            base = lang.split('-')[0]
+            if base in trans_map and trans_map[base]:
+                return trans_map[base]
+        
+        # Case-insensitive fallback
+        for k, v in trans_map.items():
+            if not k:
+                continue
+            if k.lower() == lang.lower() or k.split('-')[0].lower() == lang.split('-')[0].lower():
+                return v
+        
+        # Final fallback to original field
+        return getattr(self, field_name, '') or ''
 
 
 class ChatSession(models.Model):
@@ -194,3 +306,181 @@ class AdminUser(models.Model):
     
     def __str__(self):
         return f"{self.user.username} - {self.role}"
+
+
+class UserProfile(models.Model):
+    """Extended user profile for government scheme assistant"""
+    
+    GENDER_CHOICES = [
+        ('male', 'Male'),
+        ('female', 'Female'),
+        ('other', 'Other'),
+        ('prefer_not_to_say', 'Prefer not to say'),
+    ]
+    
+    EDUCATION_CHOICES = [
+        ('primary', 'Primary School'),
+        ('secondary', 'Secondary School'),
+        ('higher_secondary', 'Higher Secondary'),
+        ('graduate', 'Graduate'),
+        ('postgraduate', 'Postgraduate'),
+        ('other', 'Other'),
+    ]
+    
+    EMPLOYMENT_CHOICES = [
+        ('employed', 'Employed'),
+        ('unemployed', 'Unemployed'),
+        ('self_employed', 'Self Employed'),
+        ('student', 'Student'),
+        ('retired', 'Retired'),
+        ('homemaker', 'Homemaker'),
+        ('other', 'Other'),
+    ]
+    
+    # User relationship
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='govt_profile')
+    
+    # Personal Information
+    phone_number = models.CharField(max_length=15, blank=True, null=True, help_text="Mobile number for notifications")
+    age = models.PositiveIntegerField(blank=True, null=True, help_text="Age in years")
+    gender = models.CharField(max_length=20, choices=GENDER_CHOICES, blank=True, null=True)
+    education = models.CharField(max_length=20, choices=EDUCATION_CHOICES, blank=True, null=True)
+    employment_status = models.CharField(max_length=20, choices=EMPLOYMENT_CHOICES, blank=True, null=True)
+    
+    # Location Information
+    state = models.CharField(max_length=100, blank=True, null=True, help_text="State of residence")
+    district = models.CharField(max_length=100, blank=True, null=True, help_text="District of residence")
+    pincode = models.CharField(max_length=10, blank=True, null=True, help_text="PIN code")
+    
+    # Preferences
+    preferred_language = models.CharField(
+        max_length=10, 
+        choices=GovernmentScheme.LANGUAGE_CHOICES, 
+        default='en',
+        help_text="Preferred interface language"
+    )
+    interested_sectors = models.JSONField(
+        default=list, 
+        help_text="List of sectors user is interested in"
+    )
+    notification_preferences = models.JSONField(
+        default=dict, 
+        help_text="Notification settings"
+    )
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    last_login = models.DateTimeField(blank=True, null=True)
+    is_verified = models.BooleanField(default=False, help_text="Whether user profile is verified")
+    
+    class Meta:
+        db_table = 'user_profiles'
+        indexes = [
+            models.Index(fields=['state']),
+            models.Index(fields=['preferred_language']),
+            models.Index(fields=['is_verified']),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.username} - Profile"
+
+
+class UserSchemeInteraction(models.Model):
+    """Track user interactions with schemes"""
+    
+    INTERACTION_TYPES = [
+        ('viewed', 'Viewed'),
+        ('applied', 'Applied'),
+        ('bookmarked', 'Bookmarked'),
+        ('shared', 'Shared'),
+        ('inquired', 'Inquired'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='scheme_interactions')
+    scheme_id = models.CharField(max_length=100, help_text="MongoDB scheme ID")
+    interaction_type = models.CharField(max_length=20, choices=INTERACTION_TYPES)
+    interaction_data = models.JSONField(default=dict, help_text="Additional interaction details")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'user_scheme_interactions'
+        indexes = [
+            models.Index(fields=['user', 'interaction_type']),
+            models.Index(fields=['scheme_id']),
+            models.Index(fields=['created_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.interaction_type} - {self.scheme_id}"
+
+
+class UserSearchHistory(models.Model):
+    """Track user search queries for personalization"""
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='search_history')
+    query = models.TextField(help_text="Search query text")
+    language = models.CharField(max_length=10, choices=GovernmentScheme.LANGUAGE_CHOICES, default='en')
+    results_count = models.IntegerField(default=0, help_text="Number of results returned")
+    clicked_schemes = models.JSONField(default=list, help_text="IDs of schemes user clicked on")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'user_search_history'
+        indexes = [
+            models.Index(fields=['user', 'created_at']),
+            models.Index(fields=['language']),
+        ]
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.query[:50]}..."
+
+
+class UserNotification(models.Model):
+    """User notifications for scheme updates and recommendations"""
+    
+    NOTIFICATION_TYPES = [
+        ('scheme_recommendation', 'Scheme Recommendation'),
+        ('scheme_update', 'Scheme Update'),
+        ('application_deadline', 'Application Deadline'),
+        ('new_scheme', 'New Scheme'),
+        ('system', 'System Message'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=200, help_text="Notification title")
+    message = models.TextField(help_text="Notification message")
+    notification_type = models.CharField(max_length=30, choices=NOTIFICATION_TYPES)
+    scheme_id = models.CharField(max_length=100, blank=True, null=True, help_text="Related scheme ID")
+    is_read = models.BooleanField(default=False, help_text="Whether notification has been read")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'user_notifications'
+        indexes = [
+            models.Index(fields=['user', 'is_read']),
+            models.Index(fields=['notification_type']),
+            models.Index(fields=['created_at']),
+        ]
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.title}"
+
+
+class ScrapedScheme(models.Model):
+    """
+    Model for storing scraped schemes from MyScheme.gov.in
+    Completely separate from GovernmentScheme - only stores title and URL
+    """
+    title = models.CharField(max_length=500)
+    url = models.URLField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'scraped_scheme'
+        ordering = ['-created_at']  # Newest first
+    
+    def __str__(self):
+        return self.title

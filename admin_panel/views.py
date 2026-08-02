@@ -17,7 +17,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from chatbot.models import AdminUser
-from chatbot.models import GovernmentScheme, WebScrapingLog
+from django.contrib.auth.models import User
+from chatbot.models import GovernmentScheme, WebScrapingLog, Sector
 from chatbot.web_scraper import scraper
 import json
 import logging
@@ -43,6 +44,20 @@ def admin_login(request):
     return render(request, 'admin_panel/login.html')
 
 
+def user_login(request):
+    """Simple site user login view (non-admin)."""
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user:
+            login(request, user)
+            return redirect('/')
+        else:
+            messages.error(request, 'Invalid credentials')
+    return render(request, 'user/login.html')
+
+
 def admin_logout(request):
     """
     Admin logout view
@@ -66,6 +81,9 @@ def admin_dashboard(request):
         
         # Get recent schemes
         recent_schemes = GovernmentScheme.objects.order_by('-created_at')[:10]
+
+        # Get current active schemes (most recently updated)
+        active_schemes_list = GovernmentScheme.objects.filter(is_active=True).order_by('-last_updated')[:20]
         
         # Get scraping logs
         scraping_logs = WebScrapingLog.objects.order_by('-started_at')[:10]
@@ -76,6 +94,7 @@ def admin_dashboard(request):
             'active_schemes': active_schemes,
             'recent_scraping': recent_scraping,
             'recent_schemes': recent_schemes,
+            'active_schemes_list': active_schemes_list,
             'scraping_logs': scraping_logs,
         }
         
@@ -103,6 +122,9 @@ def manage_schemes(request):
         search_query = request.GET.get('search', '')
         sector_filter = request.GET.get('sector', '')
         status_filter = request.GET.get('status', '')
+        level_filter = request.GET.get('level', '')
+        language_filter = request.GET.get('language', '')
+        state_filter = request.GET.get('state', '')
         
         # Build filters
         schemes = GovernmentScheme.objects.all()
@@ -115,7 +137,13 @@ def manage_schemes(request):
             )
         
         if sector_filter:
-            schemes = schemes.filter(sector=sector_filter)
+            schemes = schemes.filter(sector__name=sector_filter)
+        if level_filter:
+            schemes = schemes.filter(government_level=level_filter)
+        if language_filter:
+            schemes = schemes.filter(language=language_filter)
+        if state_filter:
+            schemes = schemes.filter(state__iexact=state_filter)
         
         if status_filter == 'active':
             schemes = schemes.filter(is_active=True)
@@ -126,17 +154,26 @@ def manage_schemes(request):
         paginator = Paginator(schemes.order_by('-created_at'), 20)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
-        
-        # Get sectors for filter
-        sectors = GovernmentScheme.objects.values_list('sector', flat=True).distinct()
+
+        # Build choices for filters
+        sectors = GovernmentScheme.SECTOR_CHOICES
+        levels = [('central', 'Central'), ('state', 'State'), ('local', 'Local')]
+        languages = GovernmentScheme.LANGUAGE_CHOICES
+        states = GovernmentScheme.objects.exclude(state__isnull=True).exclude(state__exact='').values_list('state', flat=True).distinct().order_by('state')
         
         context = {
             'admin_user': admin_user,
             'page_obj': page_obj,
             'sectors': sectors,
+            'levels': levels,
+            'languages': languages,
+            'states': states,
             'search_query': search_query,
             'sector_filter': sector_filter,
             'status_filter': status_filter,
+            'level_filter': level_filter,
+            'language_filter': language_filter,
+            'state_filter': state_filter,
         }
         
         return render(request, 'admin_panel/manage_schemes.html', context)
@@ -162,11 +199,15 @@ def add_scheme(request):
         if request.method == 'POST':
             try:
                 # Create new scheme
+                # Resolve sector ForeignKey from posted string
+                sector_name = request.POST.get('sector', '').strip() or 'other'
+                sector_obj, _ = Sector.objects.get_or_create(name=sector_name)
+
                 scheme = GovernmentScheme.objects.create(
                     title=request.POST.get('title'),
                     description=request.POST.get('description'),
                     short_description=request.POST.get('short_description', ''),
-                    sector=request.POST.get('sector', 'other'),
+                    sector=sector_obj,
                     ministry=request.POST.get('ministry', ''),
                     department=request.POST.get('department', ''),
                     government_level=request.POST.get('government_level', 'central'),
@@ -228,7 +269,9 @@ def edit_scheme(request, scheme_id):
                 scheme.title = request.POST.get('title')
                 scheme.description = request.POST.get('description')
                 scheme.short_description = request.POST.get('short_description', '')
-                scheme.sector = request.POST.get('sector', 'other')
+                # Resolve sector ForeignKey from posted string
+                sector_name = request.POST.get('sector', '').strip() or 'other'
+                scheme.sector, _ = Sector.objects.get_or_create(name=sector_name)
                 scheme.ministry = request.POST.get('ministry', '')
                 scheme.department = request.POST.get('department', '')
                 scheme.government_level = request.POST.get('government_level', 'central')
@@ -326,6 +369,52 @@ def run_scraping(request):
     except Exception as e:
         logger.error(f"Error in run_scraping: {e}")
         messages.error(request, 'An error occurred while running scraping.')
+        return redirect('admin_dashboard')
+
+
+@login_required
+def run_scraping_async(request):
+    """Trigger scraping in background (Celery) or run minimally if Celery not configured."""
+    try:
+        admin_user = request.user.adminuser
+        if not admin_user.can_scrape:
+            return JsonResponse({'success': False, 'message': 'Permission denied'}, status=403)
+
+        # Try to enqueue Celery task if available
+        try:
+            from admin_panel.tasks import run_scraping_task
+            task = run_scraping_task.delay()
+            return JsonResponse({'success': True, 'task_id': task.id})
+        except Exception:
+            # Fallback: run synchronously but return quickly
+            result = scraper.run_full_scraping()
+            return JsonResponse({'success': True, 'result': result})
+
+    except Exception as e:
+        logger.error(f"Error in run_scraping_async: {e}")
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+
+@login_required
+def dry_run_preview(request):
+    """Preview parsed schemes without saving to DB."""
+    try:
+        admin_user = request.user.adminuser
+        if not admin_user.can_manage_schemes:
+            messages.error(request, 'You do not have permission to preview schemes.')
+            return redirect('admin_dashboard')
+
+        # Run scrapers but do not save — limit results
+        central = scraper.scrape_central_government_sites()
+        state = scraper.scrape_state_government_sites()
+        combined = (central or []) + (state or [])
+        combined = combined[:80]
+
+        return render(request, 'admin_panel/dry_run_preview.html', {'schemes': combined})
+
+    except Exception as e:
+        logger.error(f"Error in dry_run_preview: {e}")
+        messages.error(request, 'An error occurred during dry-run.')
         return redirect('admin_dashboard')
 
 

@@ -1,0 +1,20 @@
+{
+  "query": "hello"
+}
+
+// EXPECTED OUTPUT (GREETING - NO SCHEME SEARCH):
+// {
+//   "answer": "Hello! I am YOJANAMITHRA, your Government Schemes Assistant. I can help you find official central and state government schemes across various sectors like agriculture, education, healthcare, employment, and social welfare. \n\nWhat would you like to know today? You can ask me about:\n- Schemes for farmers, students, women, senior citizens\n- Financial assistance programs\n- Healthcare and education benefits\n- Employment and skill development schemes",
+//   "ssml": "<speak>\nHello! I am YOJANAMITHRA, your Government Schemes Assistant. \n<break time=\"300ms\"/>\nI can help you find official government schemes for agriculture, education, healthcare, employment, and social welfare.\n<break time=\"300ms\"/>\nHow may I assist you today?\n</speak>",
+//   "schemes_used": []
+// }
+
+// WHAT TO CHECK:
+// 1. schemes_used is EMPTY (no scheme search performed)
+// 2. Response is INSTANT (< 100ms, no Gemini call)
+// 3. Greeting message matches GREETING_RESPONSE in prompts.py
+// 4. SSML has proper breaks for voice output
+// 5. No database query executed
+
+// OTHER GREETINGS TO TEST:
+// "hi", "hey", "good morning", "namaste", "how are you", "who are you"

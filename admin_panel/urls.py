@@ -22,6 +22,10 @@ urlpatterns = [
     # Scraping
     path('scraping/run/', views.run_scraping, name='run_scraping'),
     path('scraping/logs/', views.scraping_logs, name='scraping_logs'),
+    path('scraping/run-async/', views.run_scraping_async, name='run_scraping_async'),
+    path('scraping/dry-run/', views.dry_run_preview, name='scraping_dry_run'),
+    # User-facing login
+    path('user/login/', views.user_login, name='user_login'),
     
     # API endpoints
     path('api/stats/', views.api_scheme_stats, name='api_scheme_stats'),

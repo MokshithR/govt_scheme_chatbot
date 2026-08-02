@@ -172,6 +172,14 @@ class MongoDBAdapter:
             print(f"MongoDB get all schemes error: {e}")
             return []
     
+    def get_total_schemes(self) -> int:
+        """Get total number of schemes in database"""
+        try:
+            return self.schemes_collection.count_documents({})
+        except Exception as e:
+            print(f"Error getting total schemes: {e}")
+            return 0
+    
     def get_scheme_statistics(self) -> Dict:
         """Get database statistics"""
         try:
