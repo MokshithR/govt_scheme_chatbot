@@ -79,7 +79,7 @@ profile_default/
 ipython_config.py
 
 # Environments
-.env # <-- THIS IS THE IMPORTANT LINE TO ADD/KEEP
+.env 
 .venv
 env/
 venv/
